@@ -158,6 +158,11 @@ export default class VizController {
         this.header.onDateChanged = function (dateString) {
             thisController.setDay(dateString, true);
         }
+        this.header.didClickBackButton = function() {
+            let currentRegion = thisController._currentRegion();
+            let nextRegion = (currentRegion.parentRegion !== null) ? currentRegion.parentRegion : thisController.baseRegion;
+            thisController._vizClickedRegionID(nextRegion.ID, thisController.header);
+        }
 
         this.dataTable.onRegionClicked = function(regionID) {
             thisController._vizClickedRegionID(regionID, thisController.dataTable);

@@ -53,11 +53,12 @@ export default class VizHeader {
 
         this._computeCollapsedLayout();
         this.setCollapsed(false, false);
+        this.didClickBackButton = null;
     }
 
     _didClickBackButton() {
-        if (this.onRegionSelected !== null) {
-            this.onRegionSelected(this.regionSelect.selectedRegionID);
+        if (this.didClickBackButton !== null) {
+            this.didClickBackButton();
         }
     }
 
@@ -153,7 +154,7 @@ export default class VizHeader {
     setDate(day) {
         let date = new Date(day);
         date = normalizeDate(date);
-        // let dateString = date.toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' });
+
         this.dateSelector.setDate(date);
         if (this.compactDateSelector !== undefined) {
             this.compactDateSelector.setDate(date);
