@@ -1,5 +1,5 @@
 import {timeFormat} from "d3-time-format";
-import {dateStringFromDate, shortDateStringFromDate} from "./DateUtils";
+import {dateStringFromDate, denormalizeDate, shortDateStringFromDate} from "./DateUtils";
 
 export default class DateSelector {
     constructor(parentElementSelection, textAlign = "center", isStandalone = false) {
@@ -46,7 +46,7 @@ export default class DateSelector {
     mostRecentDataIsFromToday() {
         let rightNow = new Date();
         // Count 3AM as "today" still.
-        let threeHoursAgo = rightNow.addHours(-3);
+        let threeHoursAgo = denormalizeDate(rightNow.addHours(-3));
         return shortDateStringFromDate(threeHoursAgo) == shortDateStringFromDate(this.today);
     }
 

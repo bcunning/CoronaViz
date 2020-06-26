@@ -33,6 +33,10 @@ export function normalizeDate(date) {
     return result;
 }
 
+export function denormalizeDate(date) {
+    return new Date(date.getTime() - date.getTimezoneOffset() * MS_IN_MINUTE);
+}
+
 export function numDaysBetweenDates(dateOne, dateTwo, round=true) {
     let inMilliseconds = dateTwo.getTime() - dateOne.getTime();
     let result = (inMilliseconds / MS_IN_DAY);
