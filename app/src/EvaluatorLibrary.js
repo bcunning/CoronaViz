@@ -251,6 +251,10 @@ export default class EvaluatorLibrary {
         let result = Evaluator.from(metricEvaluator);
         result.setBaseStat(function (evaluator, snapshot) {
             let priorSnapshot = snapshot.timeSeries.snapshotPrecedingSnapshot(snapshot, numDays);
+            if (priorSnapshot === null) {
+                return 0;
+            }
+
             let priorStat = metricEvaluator.baseStatForSnapshot(metricEvaluator, priorSnapshot);
             let currentStat = metricEvaluator.baseStatForSnapshot(metricEvaluator, snapshot);
 
