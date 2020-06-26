@@ -12,7 +12,8 @@ import { NATION_DEFAULT_ID } from "./Constants.js";
 const MAP_INITIAL_SCALE = 925;
 const MAP_ZOOM_RESET_TIMEOUT = 7000;
 const MAP_ZOOM_RESET_DURATION = 1500;
-const MAP_BACKGROUND_COLOR = "white";//"rgb(248,248,248)";
+const MAP_BACKGROUND_COLOR = "white";
+const MAP_ZOOMED_OUT_PADDING_FACTOR = 0.95;
 
 const MAP_MAX_HEIGHT = 150;
 
@@ -82,12 +83,7 @@ export default class MapVisualization {
 
         let thisViz = this;
 
-        this._zoom = zoom()
-            .scaleExtent([0.5, this.maxScale])
-            .interpolate(interpolate)
-            .on("zoom", function() {
-                thisViz._zoomed(thisViz);
-            });
+        this._updateZoomFunction(0.5);
 
         this.mapContainer = parentElementSelection;
 
@@ -126,8 +122,6 @@ export default class MapVisualization {
         this._createCounties(this._countyLayer, this.countyFeatures, this._geoPath);
         //this._createOverlays(this._countyLayer, this._overlayLayer, this.countyFeatures);
 
-
-        this.svg.call(this._zoom);
         this._parseDimensions();
         this.resetZoom(false)
 
@@ -151,12 +145,11 @@ export default class MapVisualization {
 
     resetZoom(animated = true, duration = MAP_REGION_TRANSITION_DURATION) {
         let baseBox = new CGRect(0, 0, this.desiredWidth, this.desiredHeight);
-        this.zoomToBox(baseBox, animated, 0.95, duration);
+        this.zoomToBox(baseBox, animated, MAP_ZOOMED_OUT_PADDING_FACTOR, duration);
         this._zoomedBounds = null;
     }
 
     zoomToBox(boundingBox, animated = true, paddingFactor = null, duration = MAP_REGION_TRANSITION_DURATION) {
-        // console.log("zooming to x:" + boundingBox.x + " y:" + boundingBox.y + " width: "+boundingBox.width +" height:" + boundingBox.height);
         const x0 = boundingBox.x;
         const x1 = boundingBox.x + boundingBox.width;
         const y0 = boundingBox.y;
@@ -164,9 +157,7 @@ export default class MapVisualization {
 
         this._zoomedBounds = boundingBox;
         let centerPoint = [(x0 + x1) / 2.0, (y0 + y1) / 2.0];
-        if (paddingFactor === null) {
-            paddingFactor = this.zoomBoxPaddingFactor;
-        }
+        let scale = this._scaleForBoundingBox(boundingBox, paddingFactor);
 
         let thisMap = this;
         let svgSelection = this.svg;
@@ -176,12 +167,38 @@ export default class MapVisualization {
         svgSelection.call(this._zoom.transform,
             zoomIdentity
                 .translate(this.activeWidth / 2, this.activeHeight / 2)
-                .scale(Math.min(thisMap.maxScale, paddingFactor / Math.max((x1 - x0) / thisMap.activeWidth, (y1 - y0) / thisMap.activeHeight)))
+                .scale(scale)
                 .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
             centerPoint)
             .on("end", function () {
                 thisMap._finishedZoomTransition();
             });
+    }
+
+    _updateZoomFunction(minScale = null) {
+        if (minScale === null) {
+            let maxMapRect = new CGRect(0, 0, this.desiredWidth, this.desiredHeight);
+            minScale = this._scaleForBoundingBox(maxMapRect, MAP_ZOOMED_OUT_PADDING_FACTOR);
+        }
+        let thisViz = this;
+        this._zoom = zoom()
+            .scaleExtent([minScale, this.maxScale])
+            .interpolate(interpolate)
+            .on("zoom", function() {
+                thisViz._zoomed(thisViz);
+            });
+
+        if (this.svg !== undefined) {
+            this.svg.call(this._zoom);
+        }
+    }
+
+    _scaleForBoundingBox(boundingBox, paddingFactor= null) {
+        if (paddingFactor === null) {
+            paddingFactor = this.zoomBoxPaddingFactor;
+        }
+        let limitingRatio = Math.max(boundingBox.width / this.activeWidth, boundingBox.height / this.activeHeight);
+        return Math.min(this.maxScale, paddingFactor / limitingRatio);
     }
 
     boundingBoxForRegion(regionID) {
@@ -454,6 +471,8 @@ export default class MapVisualization {
         } else if (this.activeHeight !== this.desiredHeight) {
             this._updateViewboxForNewDimensions(this.desiredWidth, this.desiredHeight);
         }
+
+        this._updateZoomFunction();
     }
 
     _updateViewboxForNewDimensions(newWidth, newHeight) {
