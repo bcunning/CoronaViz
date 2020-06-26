@@ -22,10 +22,6 @@ export default class NavControl {
         }
     }
 
-    setTitleView(titleSelection) {
-        this.titleSelection = titleSelection;
-    }
-
     _backButtonClicked() {
         if (this.didClickBackButton !== null) {
             this.didClickBackButton();

@@ -202,12 +202,11 @@ export default class VizController {
         };
 
         this.map.onOceanClicked = function() {
-            console.log("did click ocean");
             thisController.unsetRegion(true);
         };
 
         this.map.didScrollAwayFromHighlightedState = function() {
-            console.log("did move from highlighted state");
+            console.log("Did scroll away from highlighted state");
             thisController.unsetRegion(false);
         };
 
@@ -583,7 +582,7 @@ export default class VizController {
 
         this._inRegionSet = true;
 
-        console.log("setting region ID: " + regionID);
+        console.log("Setting region ID: " + regionID);
 
         this.previouslySelectedRegionID = this.selectedRegionID;
         this.selectedRegionID = regionID;
@@ -605,7 +604,9 @@ export default class VizController {
 
         let shouldAnimate = true;
 
+        this.header.setBackButtonVisible((this.selectedRegionID !== this.baseRegion.ID), shouldAnimate);
         this.updateHeader(shouldAnimate);
+
         this.map.highlightRegionsWithIDs(this._mapRegionIDsForRegionID(regionID));
         this.updateDashboard(shouldAnimate);
         this.updateDataTable(shouldAnimate, tappedElement, tappedRegionID)
@@ -615,13 +616,9 @@ export default class VizController {
         this.updateSlider();
         this.updateRegionPicker();
 
-        let needsBackButton = (this.selectedRegionID !== this.baseRegion.ID);
-        this.header.setBackButtonVisible(needsBackButton, shouldAnimate);
-
         if (centeredElement !== null) {
             let newYCoord = centeredElement.getBoundingClientRect().y;
             if (newYCoord != priorCenterElementYCoord) {
-                console.log("maintaining visibleY prior: " + priorCenterElementYCoord + "new: " + newYCoord);
                 window.scrollBy(0, newYCoord - priorCenterElementYCoord);
             }
         }

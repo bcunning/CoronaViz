@@ -45,9 +45,6 @@ export default class VizHeader {
         this.compactRegionSelect = new ResizingSelect(this.compactTitleNav.container, true);
         this.compactDateSelector = new DateSelector(this.compactTitleContent, textAlign, true);
 
-        // this.compactTrendLine = new OverTimeVisualization(this.compactTitleContent, EvaluatorLibrary.newConfirmedCaseEvaluator(), ChartDisplayMode.MiniWithTitle);
-        // this.compactTrendLine.fixTimeDomain(dateRange[0], dateRange[1]);
-
         this.updateForOptions(allRegions);
 
         let thisHeader = this;
@@ -65,19 +62,24 @@ export default class VizHeader {
     }
 
     _computeCollapsedLayout() {
+        let priorMinHeight = this.minHeaderHeight;
         let compactTitleNode = this.compactTitleContainer.node();
-        let headerNode = this.container.node();
-        let headerPadding = parseInt(this.container.style("padding-bottom").replace("px", ""));
         this.minHeaderHeight = compactTitleNode.offsetTop + compactTitleNode.offsetHeight;
-        this.maxHeaderHeight = headerNode.offsetTop + headerNode.offsetHeight - headerPadding;
-        this.collapseScrollDistance = this.maxHeaderHeight - this.minHeaderHeight;
+        this.maxHeaderHeight = this._currentHeaderNodeHeight();
 
         // Lock height
         if (this.collapsedFeatureElement !== null) {
             let parentHeight = this.parentElement.node().offsetHeight;
-            let expandedHeight = this.isCollapsed ? parentHeight + this.collapseScrollDistance : parentHeight;
+            let expandedHeight = this.isCollapsed ? parentHeight + (this.maxHeaderHeight - this.minHeaderHeight) : parentHeight;
             this.parentElement.style("height", expandedHeight + "px");
         }
+    }
+
+    _currentHeaderNodeHeight() {
+        let headerNode = this.container.node();
+        let headerPadding = parseInt(this.container.style("padding-bottom").replace("px", ""));
+        let result = headerNode.offsetTop + headerNode.offsetHeight - headerPadding;
+        return result;
     }
 
     setBackButtonVisible(visible, animated = true) {
@@ -95,8 +97,16 @@ export default class VizHeader {
         this._computeCollapsedLayout();
     }
 
-    setCollapsed(isCollapsed, animated) {
+    _updateFeaturedElementPosition(animated = true) {
+        let marginOffset = this.isCollapsed ? this.minHeaderHeight - this.maxHeaderHeight - 2 : 0;
+        let containerSelection = this.container;
+        if (animated) {
+            containerSelection = containerSelection.transition().duration(HEADER_COLLAPSE_DURATION);
+        }
+        containerSelection.style("margin-bottom", marginOffset + "px");
+    }
 
+    setCollapsed(isCollapsed, animated) {
         if (this.isCollapsed === isCollapsed) {
             return;
         }
@@ -115,13 +125,8 @@ export default class VizHeader {
             appliedSelection.style("opacity", percentExpanded);
         });
 
-        // Adjust our total height
-        let marginOffset = isCollapsed ? this.minHeaderHeight - this.maxHeaderHeight - 2 : 0;
-        let containerSelection = this.container;
-        if (animated) {
-            containerSelection = containerSelection.transition().duration(HEADER_COLLAPSE_DURATION);
-        }
-        containerSelection.style("margin-bottom", marginOffset + "px");
+        // Float up the featured element
+        this._updateFeaturedElementPosition(animated);
 
         // Pull down the compact view
         let transformString = "translateY(-" + (100 * percentExpanded) + "%)";
@@ -137,20 +142,6 @@ export default class VizHeader {
         } else {
             this.compactTitleContainer.style("transform", transformString);
         }
-    }
-
-    containsElement(element) {
-        let currentElement = element;
-        let containerElement = this.container.node();
-        while (currentElement !== null) {
-            if (currentElement === containerElement) {
-                return true;
-            }
-
-            currentElement = currentElement.parentElement;
-        }
-
-        return false;
     }
 
     updateForRegion(region, day) {
@@ -183,6 +174,12 @@ export default class VizHeader {
     setSelectedRegionWithID(regionID) {
         this.regionSelect.setSelectedRegionWithID(regionID);
         this.compactRegionSelect.setSelectedRegionWithID(regionID);
+
+        let newMaxHeight = this._currentHeaderNodeHeight();
+        if (newMaxHeight !== this.maxHeaderHeight) {
+            this.maxHeaderHeight = newMaxHeight;
+            this._updateFeaturedElementPosition(false);
+        }
     }
 
     updateForOptions(options) {
