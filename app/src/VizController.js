@@ -314,7 +314,7 @@ export default class VizController {
     }
 
     didResize() {
-        let currentWidth = window.outerWidth;
+        let currentWidth = window.innerWidth;
         if (currentWidth !== this.lastWindowWidthUpdate) {
             this.header.resetHeaderHeight();
             this._updateFixedRegionSpacing();

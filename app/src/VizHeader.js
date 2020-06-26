@@ -42,8 +42,8 @@ export default class VizHeader {
             .style("transform", "translateY(-100%)");
         this.compactTitleContent = this.compactTitleContainer.append("div").attr("class", "standalone-title-content");
         this.compactTitleNav = new NavControl(this.compactTitleContent, true);
-        this.compactRegionSelect = new ResizingSelect(this.compactTitleNav.container, true);
-        this.compactDateSelector = new DateSelector(this.compactTitleContent, textAlign, true);
+        this.compactRegionSelect = new ResizingSelect(this.compactTitleContent, true);
+        this.compactDateSelector = new DateSelector(this.compactTitleContent, "right", true);
 
         this.updateForOptions(allRegions);
 
@@ -95,6 +95,7 @@ export default class VizHeader {
 
     resetHeaderHeight() {
         this.parentElement.style("height", "unset");
+        this._updateForResize();
         this._computeCollapsedLayout();
     }
 
@@ -172,15 +173,19 @@ export default class VizHeader {
         return this.regionSelect.onRegionSelected;
     }
 
-    setSelectedRegionWithID(regionID) {
-        this.regionSelect.setSelectedRegionWithID(regionID);
-        this.compactRegionSelect.setSelectedRegionWithID(regionID);
-
+    _updateForResize() {
         let newMaxHeight = this._currentHeaderNodeHeight();
         if (newMaxHeight !== this.maxHeaderHeight) {
             this.maxHeaderHeight = newMaxHeight;
             this._updateFeaturedElementPosition(false);
         }
+    }
+
+    setSelectedRegionWithID(regionID) {
+        this.regionSelect.setSelectedRegionWithID(regionID);
+        this.compactRegionSelect.setSelectedRegionWithID(regionID);
+
+        this._updateForResize();
     }
 
     updateForOptions(options) {

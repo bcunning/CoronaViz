@@ -2,7 +2,7 @@ export default class NavControl {
     constructor(parentElementSelection, isStandalone = false) {
         let thisNav = this;
         let standaloneSuffix = isStandalone ? " standalone" : "";
-        this.container = parentElementSelection.append("div").attr("class", "nav-control" + standaloneSuffix);
+        this.container = isStandalone ? parentElementSelection : parentElementSelection.append("div").attr("class", "nav-control" + standaloneSuffix);
         this.backButton = this.container.append("div")
             .attr("class", "back-button" + standaloneSuffix)
             .on("click", function(){

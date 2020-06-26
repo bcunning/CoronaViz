@@ -290,7 +290,8 @@ form.region-select-text {
 }
 
 form.region-select-text.standalone {
-    margin-right: 16px;
+    display: flex;
+    margin-right: 0px;
     margin-left: 0px;
     margin-top: 0.33em;
     margin-bottom: 0.33em;
@@ -305,6 +306,7 @@ form.region-select-text.standalone {
     display: inline;
     padding-bottom: 2px;
     margin-left: 16px;
+    margin-right: 0px;
 }
 
 div.title-container.standalone {
@@ -326,8 +328,10 @@ div.standalone-title-content {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-left:12px;
+    margin-right:12px;
     width: 100%;
-    max-width: 670px;
+    max-width: 646px;
 }
 
 .grid-line {
