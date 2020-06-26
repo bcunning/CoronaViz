@@ -1,5 +1,5 @@
 # CoronaViz
-Tracking the top open-source COVID-19 datasets in a mobile-friendly interface at [ronaviz.com](https://ronaviz.com). Comparing counties, states, and regions. Data is updated and aggregated every hour according to several open-source datasets.
+Tracking the top open-source COVID-19 datasets in a mobile-friendly interface at [ronaviz.com](https://ronaviz.com). Data is updated and aggregated every hour according to several open-source datasets:
 
 Case and death data is reported via the [New York Times](https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html).
 
