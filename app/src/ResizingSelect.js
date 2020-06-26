@@ -50,6 +50,10 @@ export default class ResizingSelect {
 
     setSelectedRegionWithID(regionID) {
         let relevantOption = this.select.select("option[value='" + regionID +"']").node();
+        if (relevantOption === null) {
+            console.log("No region in drop-down with ID: " + regionID);
+            return;
+        }
         let newIndex = relevantOption.index;
         let currentIndex = this._currentlySelectedIndex();
         if (newIndex != currentIndex) {
