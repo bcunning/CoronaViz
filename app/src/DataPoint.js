@@ -20,7 +20,6 @@ Object.defineProperty(arrayPrototype, "rawdata", {
         return this;
     },
     set: function rawdata(newData) {
-        console.log("setting data");
     }
 });
 Object.defineProperty(arrayPrototype, "value", {
@@ -48,24 +47,24 @@ export default class DataPoint {
         if (Number.isNaN(value) || value === undefined) {
             value = 0;
         }
-        this.data = new Array(13).fill(0);
+        this.rawdata = new Array(13).fill(0);
         this.value = value;
     }
 
     get value() {
-        return this.data[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)];
+        return this.rawdata[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)];
     }
 
     set value(newValue) {
-        this.data[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)] = newValue;
+        this.rawdata[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)] = newValue;
     }
 
     get change() {
-        return this.data[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)];
+        return this.rawdata[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)];
     }
 
     set change(newChange) {
-        this.data[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)] = newChange;
+        this.rawdata[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)] = newChange;
     }
 
     static FilterIndexToUsedIndices(index) {
