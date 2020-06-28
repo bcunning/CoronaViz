@@ -460,7 +460,7 @@ export default class VizController {
         // result.push(new Stat("New Cases", infection.cases ? formatter(infection.cases.change) : "N/A"));
         // result.push(new Stat("New Deaths", infection.deaths ? formatter(infection.deaths.change) : "N/A"));
         // result.push(new Stat("Total Tests", infection.totalTests ? formatter(infection.totalTests.value) : "N/A"));
-        // result.push(new Stat("Percent Positive", infection.percentPositive()));
+        // result.push(new Stat("Percent Positive", infection.percentPositive));
         result.push(new Stat("Total Cases", infection.cases ? formatter(infection.cases.value) : "N/A"));
         result.push(new Stat("Deaths", infection.deaths ? formatter(infection.deaths.value) : "N/A"));
 
