@@ -926,9 +926,14 @@ export default class VizController {
         if (dataSlice) {
             let thisController = this;
             let currentRegion = this._currentRegion();
-            this.overTimeCharts.forEach(function (chart) {
+            let numCharts = this.overTimeCharts.length;
+            for (let i = 0; i < numCharts; i++) {
+                // Go in reverse order so that a suddenly invalidated (and hidden) chart
+                // doesn't cause the currently viewed chart to become "not visible" via document reflow.
+                // The result of that situation is a chart not animating when it should.
+                let chart = thisController.overTimeCharts[numCharts - 1 - i];
                 thisController.updateOverTimeChart(chart, day, currentRegion, dataSlice, animated);
-            });
+            }
         }
     }
 
