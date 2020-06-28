@@ -2,6 +2,9 @@ import DataPoint from "./DataPoint";
 
 export default class Infection {
     constructor(cases, deaths) {
+        if (cases === null && deaths === null) {
+            return;
+        }
         this.cases = new DataPoint(parseInt(cases));
         this.deaths = new DataPoint(parseInt(deaths));
         this.hospitalized = new DataPoint(0);
@@ -26,7 +29,7 @@ export default class Infection {
     }
 
     static fromJSONObject(data) {
-        let result = new Infection();
+        let result = new Infection(null, null);
         result.cases = DataPoint.fromJSONObject(data.C);
         result.deaths = DataPoint.fromJSONObject(data.D);
         result.hospitalized = DataPoint.fromJSONObject(data.H);

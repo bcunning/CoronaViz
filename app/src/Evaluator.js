@@ -221,11 +221,14 @@ export default class Evaluator {
 
     statForSnapshot(snapshot) {
         let result = this.baseStatForSnapshot(this, snapshot);
-        if (!(result instanceof DataPoint)) {
+        if (!(result instanceof DataPoint) && !(result instanceof Array)) {
             return result;
         }
+        if (result.rawdata === undefined) {
+            return null;
+        }
         let dataIndex = Evaluator.dataIndexForParameters(this.measureDelta, this.smoothed);
-        return result.data[dataIndex];
+        return result.rawdata[dataIndex];
     }
 
     static dataIndexForParameters(measureDelta, smoothed) {

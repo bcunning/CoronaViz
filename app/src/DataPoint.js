@@ -14,6 +14,32 @@ export const StatIndex  = {
     RateOfChange_RateOfChange: 12
 };
 
+var arrayPrototype = Array.prototype;
+Object.defineProperty(arrayPrototype, "rawdata", {
+    get: function rawdata() {
+        return this;
+    },
+    set: function rawdata(newData) {
+        console.log("setting data");
+    }
+});
+Object.defineProperty(arrayPrototype, "value", {
+    get: function value() {
+        return this[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)];
+    },
+    set: function value(newValue) {
+        this[DataPoint.FilterIndexToUsedIndices(StatIndex.Value)] = newValue;
+    }
+});
+Object.defineProperty(arrayPrototype, "change", {
+    get: function change() {
+        return this[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)];
+    },
+    set: function change(newChange) {
+        this[DataPoint.FilterIndexToUsedIndices(StatIndex.Change)] = newChange;
+    }
+});
+
 export default class DataPoint {
     constructor(value) {
         if (value === null) {
@@ -73,10 +99,10 @@ export default class DataPoint {
             return null;
         }
 
+        // Shim an Array as a DataPoint class. Helps in speeding up core parsing routine.
+        // Proxy methods for DataPoint getters and setters can be found at the top of this file in the Array prototype.
         if (JSONObject.d !== undefined) {
-            let result = new DataPoint(null);
-            result.data = JSONObject.d;
-            return result;
+            return JSONObject.d;
         }
 
         return new DataPoint();

@@ -263,8 +263,8 @@ export default class EvaluatorLibrary {
             }
 
             let dataIndex = Evaluator.dataIndexForParameters(metricEvaluator.measureDelta, true);
-            let priorValue = priorStat.data[dataIndex];
-            let currentValue = currentStat.data[dataIndex];
+            let priorValue = priorStat.rawdata[dataIndex];
+            let currentValue = currentStat.rawdata[dataIndex];
             if (priorValue === 0) {
                 return 0;
             }
@@ -316,11 +316,11 @@ export default class EvaluatorLibrary {
                 return null;
             }
 
-            let priorPositive = priorPositiveStat.data[dataIndex];
-            let priorTotal = priorTotalStat.data[dataIndex];
+            let priorPositive = priorPositiveStat.rawdata[dataIndex];
+            let priorTotal = priorTotalStat.rawdata[dataIndex];
 
-            let currentPositive = snapshot.infection.testedPositive.data[dataIndex];
-            let currentTotal = snapshot.infection.totalTests.data[dataIndex];
+            let currentPositive = snapshot.infection.testedPositive.rawdata[dataIndex];
+            let currentTotal = snapshot.infection.totalTests.rawdata[dataIndex];
 
             let priorPercentPositive = (priorTotal === 0) ? 0 : priorPositive / priorTotal;
             let currentPercentPositive = (currentTotal === 0) ? 0 : currentPositive / currentTotal;

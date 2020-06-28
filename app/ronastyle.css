@@ -50,8 +50,10 @@ svg text {
     width: 27px;
     height: 27px;
     display: inline;
-    margin-left: -8px;
-    margin-right: 5px;
+    margin-left: -13px;
+    margin-right: 0px;
+    padding-left:5px;
+    padding-right:5px;
     margin-top: auto;
     margin-bottom: auto;
     cursor: pointer;
@@ -328,7 +330,7 @@ div.standalone-title-content {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-left:12px;
+    margin-left:13px;
     margin-right:12px;
     width: 100%;
     max-width: 646px;
@@ -399,6 +401,7 @@ div.standalone-title-content {
     padding-top: 0.3em;
     justify-content: space-between;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 @media(hover:hover) {
@@ -426,7 +429,16 @@ div.data-table .highlighted {
 
 div.data-table-body div.data-table-row {
     border-bottom: 1px solid rgba(0,0,0,.05);
+
 }
+
+div.data-table-body div.data-table-row:active {
+     background-color: rgb(248, 248, 248);
+     margin-left: -2px;
+     padding-left: 2px;
+     margin-right: -2px;
+     padding-right: 2px;
+ }
 div.data-table-body div.data-table-row:nth-child(1) {
     border-bottom: 1px solid rgba(0,0,0,.2);
 }
@@ -453,6 +465,11 @@ div.data-table-header div.data-table-cell:nth-child(1) {
     background: #f9f9f9;
     border-bottom: 1px solid rgba(0,0,0,.05);
     cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.data-table-button-row:active {
+    background: rgb(240, 240, 240);
 }
 
 .data-table-row-after-truncation {

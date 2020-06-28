@@ -658,7 +658,6 @@ export default class MapVisualization {
                     thisViz._didClickRegion(thisViz, this, currentFeature);
                     event.preventDefault();
                 }
-
             })
             .on("click", function(currentFeature) {
                 thisViz._didClickRegion(thisViz, this, currentFeature);
