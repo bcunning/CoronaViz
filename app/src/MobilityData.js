@@ -10,14 +10,6 @@ export const MobilityType = {
 };
 
 export default class MobilityData {
-    constructor() {
-        this.retailAndRecreation = null;
-        this.workplace = null;
-        this.parks = null;
-        this.transit = null;
-        this.residential = null;
-    }
-
     static fromJSONObject(data) {
         let result = new MobilityData();
         result.retailAndRecreation = DataPoint.fromJSONObject(data.rr);

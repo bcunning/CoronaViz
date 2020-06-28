@@ -95,16 +95,12 @@ export default class DataPoint {
     }
 
     static fromJSONObject(JSONObject) {
-        if (JSONObject === undefined) {
+        if (JSONObject === undefined || JSONObject.d === undefined) {
             return null;
         }
 
         // Shim an Array as a DataPoint class. Helps in speeding up core parsing routine.
         // Proxy methods for DataPoint getters and setters can be found at the top of this file in the Array prototype.
-        if (JSONObject.d !== undefined) {
-            return JSONObject.d;
-        }
-
-        return new DataPoint();
+        return JSONObject.d;
     }
 }
