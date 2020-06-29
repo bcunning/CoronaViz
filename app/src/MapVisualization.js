@@ -89,6 +89,7 @@ export default class MapVisualization {
 
         // Create SVG
         this.svg = this.mapContainer.append("svg").attr("class", "map-viz");
+        this.container = this.svg;
         this._updateViewboxForNewDimensions(vizWidth, vizHeight);
 
         // Install background rect
@@ -124,10 +125,6 @@ export default class MapVisualization {
 
         this._parseDimensions();
         this.resetZoom(false)
-
-        window.addEventListener('resize', function() {
-            thisViz.didResize();
-        });
     }
 
     windowBounds() {

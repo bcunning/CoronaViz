@@ -107,10 +107,6 @@ export default class OverTimeVisualization {
         }
 
         this.setShowSmoothedData(true);
-
-        window.addEventListener('resize', function() {
-            thisViz.didResize();
-        });
     }
 
     _svgForDisplayMode(displayMode) {

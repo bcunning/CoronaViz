@@ -318,6 +318,15 @@ export default class VizController {
         if (currentWidth !== this.lastWindowWidthUpdate) {
             this.header.resetHeaderHeight();
             this._updateFixedRegionSpacing();
+
+            this.map.didResize();
+            this.overTimeCharts.forEach(function (chart) {
+                chart.didResize();
+            });
+            this.rankedBarCharts.forEach(function (chart) {
+                chart.didResize();
+            });
+
             this.lastWindowWidthUpdate = currentWidth;
         }
     }

@@ -118,7 +118,6 @@ export default class DataTable {
             let highlightedData = (this.highlightedRegionID === this.aggregateSnapshot.region.ID) ? this.aggregateSnapshot
                                                                                                   : this.data.get(this.highlightedRegionID);
             if (highlightedData === undefined) {
-                console.log("wtf");
                 debugger;
             }
             sortedData.push(highlightedData);
@@ -136,7 +135,10 @@ export default class DataTable {
                         })
                         .on("click", function (snapshot) {
                             thisTable._didClickRegion(snapshot.region);
-                        });
+                        })
+                        .on("touchstart", function (snapshot) {
+                            // Adding this listener enables :active state
+                        })
                     evals.forEach(function (e, index) {
                        result = result.append("div").attr("class", "data-table-cell")
                                       .html(function (snapshot) {
@@ -167,6 +169,9 @@ export default class DataTable {
                 .attr("class", "data-table-button-row")
                 .on("click", function (){
                     thisTable._didClickShowButton();
+                })
+                .on("touchstart", function (snapshot) {
+                    // Adding this listener enables :active state
                 });
             this.showButton.append("div")
                 .attr("class", "data-table-button-cell")

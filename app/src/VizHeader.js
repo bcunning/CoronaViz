@@ -100,12 +100,16 @@ export default class VizHeader {
     }
 
     _updateFeaturedElementPosition(animated = true) {
+        if (this.collapsedFeatureElement === null) {
+            return;
+        }
         let marginOffset = this.isCollapsed ? this.minHeaderHeight - this.maxHeaderHeight - 2 : 0;
-        let containerSelection = this.container;
+        let containerSelection = this.collapsedFeatureElement.container;
+
         if (animated) {
             containerSelection = containerSelection.transition().duration(HEADER_COLLAPSE_DURATION);
         }
-        containerSelection.style("margin-bottom", marginOffset + "px");
+        containerSelection.style("transform", "translateY(" + marginOffset + "px)");
     }
 
     setCollapsed(isCollapsed, animated) {
@@ -127,9 +131,6 @@ export default class VizHeader {
             appliedSelection.style("opacity", percentExpanded);
         });
 
-        // Float up the featured element
-        this._updateFeaturedElementPosition(animated);
-
         // Pull down the compact view
         let transformString = "translateY(-" + (100 * percentExpanded) + "%)";
         if (animated) {
@@ -144,6 +145,9 @@ export default class VizHeader {
         } else {
             this.compactTitleContainer.style("transform", transformString);
         }
+
+        // Float up the featured element
+        this._updateFeaturedElementPosition(animated);
     }
 
     updateForRegion(region, day) {

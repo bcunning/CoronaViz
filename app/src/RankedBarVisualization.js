@@ -72,9 +72,6 @@ export default class RankedBarVisualization {
             .attr("class", "medium");
 
         let thisViz = this;
-        window.addEventListener('resize', function() {
-            thisViz.didResize();
-        });
         this.title.didTapStatAdjective = function (title) {
             thisViz._didToggleStatAdjective();
         };
