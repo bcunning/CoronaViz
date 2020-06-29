@@ -211,7 +211,11 @@ export default class DataTable {
     }
 
     _d3KeyForSnapshot(snapshot, index, isPastTruncationPoint) {
-        return index + "*" +snapshot.region.ID + this.sortEvaluator.title + this._classNameForRowWithSnapshot(snapshot, isPastTruncationPoint);
+        return snapshot.dateString
+            + "*" + index
+            + "*" + snapshot.region.ID
+            + this.sortEvaluator.title
+            + this._classNameForRowWithSnapshot(snapshot, isPastTruncationPoint);
     }
 
     _classNameForRowWithSnapshot(snapshot, isPastTruncationPoint = false) {
