@@ -22,6 +22,7 @@ export default class HoverView {
 
         this.dateFormatter = timeFormat("%B %e");
         this.bigNumberFormatter = format(".2s");
+        this.smallNumberFormatter = format(".2");
         this.numberFormatter = format(".3");
     }
 
@@ -30,7 +31,16 @@ export default class HoverView {
             return evaluator.valueFormatter;
         }
 
-        return Math.abs(value) >= 1000 ? this.bigNumberFormatter : this.numberFormatter;
+        let magnitude = Math.abs(value);
+        if (magnitude >= 1000) {
+            return this.bigNumberFormatter;
+        }
+
+        if (magnitude < 100) {
+            return this.smallNumberFormatter;
+        }
+
+        return this.numberFormatter;
     }
 
     updateForSnapshots(snapshots, rawEvaluator, smoothedEvaluator, drawMode = ChartDrawMode.Default) {

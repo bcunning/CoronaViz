@@ -203,6 +203,8 @@ export default class HoverManager {
                 this.hoverDescription = new HoverView(this.descriptionContainer);
             }
 
+            // Give ourselves the full room to size.
+            this.hoverDescription.container.style("left", "0px");
             this.hoverDescription.updateForSnapshots(hoverPointsToCompare.map(p => p.data),
                                                      this.evaluator,
                                                      this.averageEvaluator,
