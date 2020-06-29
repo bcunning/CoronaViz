@@ -125,12 +125,14 @@ export default class DataTable {
         }
 
         let evals = this.evaluators;
-        this.tableBody.selectAll("div.data-table-row").remove();
         this.tableBody.selectAll("div.data-table-row")
-            .data(sortedData, function(snapshot) { return snapshot.region.name; })
+            .data(sortedData, function(snapshot, index) {
+                return thisTable._d3KeyForSnapshot(snapshot, index, highlightedRegionOutOfTopN);
+            })
             .join(function (enter) {
                     let result = enter.append("div")
-                        .attr("class", function (snapshot) {
+                        .attr("class", function (snapshot, index) {
+                            this.__key = thisTable._d3KeyForSnapshot(snapshot, index, highlightedRegionOutOfTopN);
                             return thisTable._classNameForRowWithSnapshot(snapshot, highlightedRegionOutOfTopN);
                         })
                         .on("click", function (snapshot) {
@@ -149,12 +151,27 @@ export default class DataTable {
                     return result;
                 },
                 function (update) {
-                    return update.attr("class", function (snapshot) {
+                    let result = update.filter(function(snapshot, index) {
+                        let newKey = thisTable._d3KeyForSnapshot(snapshot, index, highlightedRegionOutOfTopN);
+                        if (newKey !== this.__key) {
+                            this.__key = newKey;
+                            return true;
+                        }
+                        return false;
+                    });
+                    result = result.attr("class", function (snapshot) {
                         return thisTable._classNameForRowWithSnapshot(snapshot, highlightedRegionOutOfTopN);
                     });
+                    result = result.selectAll("div.data-table-cell")
+                        .html(function (snapshot, index) {
+                            let e = evals[index];
+                            return e.formatValueHTML(snapshot, e.valueForSnapshot(snapshot));
+                        });
+                    result = result.select(function () {return this.parentNode;});
+                    return result;
                 },
                 function (exit) {
-                    exit.remove();
+                    return exit.remove();
                 }
             );
 
@@ -191,6 +208,10 @@ export default class DataTable {
 
     childRegionType() {
         return this.aggregateRegionType() + 1;
+    }
+
+    _d3KeyForSnapshot(snapshot, index, isPastTruncationPoint) {
+        return index + "*" +snapshot.region.ID + this.sortEvaluator.title + this._classNameForRowWithSnapshot(snapshot, isPastTruncationPoint);
     }
 
     _classNameForRowWithSnapshot(snapshot, isPastTruncationPoint = false) {

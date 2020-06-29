@@ -431,14 +431,11 @@ div.data-table-body div.data-table-row {
     border-bottom: 1px solid rgba(0,0,0,.05);
     cursor: pointer;
 }
-
-div.data-table-body div.data-table-row:active {
-     background-color: rgb(248, 248, 248);
-     margin-left: -2px;
-     padding-left: 2px;
-     margin-right: -2px;
-     padding-right: 2px;
- }
+@media(hover:none) {
+    div.data-table-body div.data-table-row:active {
+        background-color: rgb(248, 248, 248);
+    }
+}
 div.data-table-body div.data-table-row:nth-child(1) {
     border-bottom: 1px solid rgba(0,0,0,.2);
 }
@@ -468,9 +465,10 @@ div.data-table-header div.data-table-cell:nth-child(1) {
     pointer-events: all;
     transition: background 0.3s ease;
 }
-
-.data-table-button-row:active {
-    background: rgb(240, 240, 240);
+@media(hover:none) {
+    .data-table-button-row:active {
+        background: rgb(240, 240, 240);
+    }
 }
 
 .data-table-row-after-truncation {
