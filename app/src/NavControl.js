@@ -7,7 +7,10 @@ export default class NavControl {
         this.container = isStandalone ? parentElementSelection : parentElementSelection.append("div").attr("class", "nav-control" + standaloneSuffix);
         this.backButton = this.container.append("div")
             .attr("class", "back-button" + standaloneSuffix)
-            .on("touchmove", function(currentFeature) {
+            .on("touchstart", function(){
+                this._touchDidMove = false;
+            })
+            .on("touchmove", function() {
                 thisNav._touchDidMove = true;
             })
             .on("touchend", function() {
@@ -15,7 +18,6 @@ export default class NavControl {
                     thisNav._backButtonClicked();
                     event.preventDefault();
                 }
-                this._touchDidMove = false;
             })
             .on("click", function() {
                 thisNav._backButtonClicked();
