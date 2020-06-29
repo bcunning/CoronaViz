@@ -47,7 +47,8 @@ export default class RankedBarVisualization {
         this.svg = this.container
             .append( "svg" )
             .attr( "width", "100%" )
-            .attr( "height", "100%" );
+            .attr( "height", "100%" )
+            .style("overflow", "visible");
 
         // Install background rect
         this.svg.append("rect")
@@ -289,7 +290,10 @@ export default class RankedBarVisualization {
             );
 
         if (animated) {
-            barSelection = barSelection.transition().duration(speed);
+            thisViz.svg.style("overflow", "hidden");
+            barSelection = barSelection.transition().duration(speed).on("end", function() {
+                thisViz.svg.style("overflow", "visible");
+            });
         }
 
         barSelection.attr("fill", BAR_FILL_COLOR)
