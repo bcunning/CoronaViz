@@ -480,11 +480,10 @@ div.data-table-header div.data-table-cell:nth-child(1) {
     text-align: right;
     flex-direction: column;
     align-items: flex-end;
-    pointer-events: none; /* Let the touch events go to the row */
 }
 
 div.data-table-body div.data-table-cell {
-    /*color: #333;*/
+    pointer-events: none; /* Let the touch events go to the row */
 }
 
 .data-table-button-cell {
