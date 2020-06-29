@@ -28,7 +28,7 @@ export default class ChartDescription {
     }
 
     noDataHTML(evaluator, region) {
-        return "There is no test data available at the county level."
+        return "There is no data available for this region."
     }
 
     updateForData(data, region, evaluator, averageEvaluator) {
