@@ -191,15 +191,6 @@ export default class RankedBarVisualization {
             .ticks(numXTicks)
             .tickSize(-this._workingHeight())
             .tickValues(newTickValues);
-        // For hiding the zero if we wanted to.
-        /*.tickFormat(function(d, i) {
-           let defaultFormatSpecifier = thisViz.viewX.tickFormat(numXTicks);
-           let result = format(defaultFormatSpecifier)(d);
-           if (i === 0 && d == 0) {
-               result = "";
-           }
-           return result;
-        });*/
 
         xAxisUpdate.call(
             newYAxis
@@ -233,6 +224,7 @@ export default class RankedBarVisualization {
 
         this._currentData = newData;
         this._currentHighlightedData = highlightedData;
+        this._highlightedRegionID = null;
 
         let thisViz = this;
 
@@ -314,23 +306,6 @@ export default class RankedBarVisualization {
         if (highlightedData !== null) {
             this.hoverRegionWithID(highlightedData.region.ID);
         }
-
-        /*
-                this.barContainer.selectAll("text")
-                    .data(data, function(d) { return d.region.ID; })
-                    .join(enter => enter.append("text")
-                                                .attr("class", "small")
-                                                .attr("text-anchor", "start")
-                                                .attr("font", "12px arial")
-                                                .text(d => thisViz._stringForNumber(thisViz._evaluator.valueForSnapshot(d)))
-                                                .attr("x", d => thisViz.x(thisViz._evaluator.valueForSnapshot(d)) + thisViz.labelBarPadding)
-                                                .attr("y", d => thisViz.y(d.region.name) + 0.5*(thisViz.y.bandwidth() + thisViz.labelFontSize)),
-                        update => update.text(d => thisViz._stringForNumber(thisViz._evaluator.valueForSnapshot(d)))
-                                        .attr("x", d => thisViz.x(thisViz._evaluator.valueForSnapshot(d)) + thisViz.labelBarPadding)
-                                        .attr("y", d => thisViz.y(d.region.name) + 0.5*(thisViz.y.bandwidth() + thisViz.labelFontSize)));
-
-                */
-
     }
 
     // Callbacks
