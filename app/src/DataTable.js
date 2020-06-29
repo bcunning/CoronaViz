@@ -141,17 +141,25 @@ export default class DataTable {
                             event.preventDefault();
                         })
                         .on("touchstart", function (snapshot) {
-                            // Adding this listener enables :active state
+                            let thisElement = this;
                             thisTable._touchDidMove = false;
+                            setTimeout(function() {
+                                if (!thisTable._touchDidMove) {
+                                    thisElement.className += " active";
+                                }
+                            }, 60);
                         })
                         .on("touchmove", function (snapshot) {
                             thisTable._touchDidMove = true;
+                            this.className = this.className.replace(" active", "");
                         })
                         .on("touchend", function (snapshot){
                             if (!thisTable._touchDidMove) {
                                 thisTable._didClickRegion(snapshot.region);
                                 event.preventDefault();
                             }
+
+                            this.className = this.className.replace(" active", "");
                         });
                     evals.forEach(function (e, index) {
                        result = result.append("div").attr("class", "data-table-cell")
