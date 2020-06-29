@@ -57,6 +57,7 @@ svg text {
     margin-top: auto;
     margin-bottom: auto;
     cursor: pointer;
+    border-radius: 5px;
 }
 
 .back-button.standalone {
@@ -64,8 +65,16 @@ svg text {
 }
 @media(hover:none) {
     .back-button:active {
-        border-radius: 5px;
         background: lightgrey;
+    }
+}
+
+@media(hover:hover) {
+    .back-button {
+        transition: background 0.3s ease;
+    }
+    .back-button:hover {
+        background: rgb(250,250,250);
     }
 }
 
