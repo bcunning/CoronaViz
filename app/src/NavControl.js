@@ -1,3 +1,5 @@
+import {event} from "d3-selection";
+
 export default class NavControl {
     constructor(parentElementSelection, isStandalone = false) {
         let thisNav = this;
@@ -5,10 +7,22 @@ export default class NavControl {
         this.container = isStandalone ? parentElementSelection : parentElementSelection.append("div").attr("class", "nav-control" + standaloneSuffix);
         this.backButton = this.container.append("div")
             .attr("class", "back-button" + standaloneSuffix)
-            .on("click", function(){
-            thisNav._backButtonClicked();
-        });
+            .on("touchmove", function(currentFeature) {
+                thisNav._touchDidMove = true;
+            })
+            .on("touchend", function() {
+                if (!thisNav._touchDidMove) {
+                    thisNav._backButtonClicked();
+                    event.preventDefault();
+                }
+                this._touchDidMove = false;
+            })
+            .on("click", function() {
+                thisNav._backButtonClicked();
+                event.preventDefault();
+            });
 
+        this._touchDidMove = false;
         this.titleSelection = null;
         this.didClickBackButton = null;
         this._backButtonVisible = true;

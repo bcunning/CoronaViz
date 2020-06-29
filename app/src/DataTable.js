@@ -1,5 +1,6 @@
 import {RegionType} from "./Region";
 import {normalizeDate, englishDateStringFromDate} from "./DateUtils";
+import {event} from "d3-selection";
 
 export default class DataTable {
     constructor(parentElementSelection, evaluators = [], sortEvaluator = null) {
@@ -137,10 +138,21 @@ export default class DataTable {
                         })
                         .on("click", function (snapshot) {
                             thisTable._didClickRegion(snapshot.region);
+                            event.preventDefault();
                         })
                         .on("touchstart", function (snapshot) {
                             // Adding this listener enables :active state
+                            thisTable._touchDidMove = false;
                         })
+                        .on("touchmove", function (snapshot) {
+                            thisTable._touchDidMove = true;
+                        })
+                        .on("touchend", function (snapshot){
+                            if (!thisTable._touchDidMove) {
+                                thisTable._didClickRegion(snapshot.region);
+                                event.preventDefault();
+                            }
+                        });
                     evals.forEach(function (e, index) {
                        result = result.append("div").attr("class", "data-table-cell")
                                       .html(function (snapshot) {
