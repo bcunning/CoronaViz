@@ -224,7 +224,6 @@ export default class RankedBarVisualization {
 
         this._currentData = newData;
         this._currentHighlightedData = highlightedData;
-        this._highlightedRegionID = null;
 
         let thisViz = this;
 
@@ -305,6 +304,8 @@ export default class RankedBarVisualization {
 
         if (highlightedData !== null) {
             this.hoverRegionWithID(highlightedData.region.ID);
+        } else {
+            this.hoverRegionWithID(null);
         }
     }
 
