@@ -5,20 +5,20 @@ export default class ChartTitle {
         let thisTitle = this;
         this.parent = parentElementSelection;
         this.container = parentElementSelection.append("div").attr("class", "robo-text-title base-chart-container content-column unselectable");
-        this.statAdjective = this.container.append("b")
+        this.statAdjective = this.container.append("span")
             .attr("class", "tappable")
             .on("click", function() {
                 thisTitle._didTapStatAdjective();
             });
-        this.metricDescription = this.container.append("b");
-        this.regionPreposition = this.container.append("div").attr("class", "robo-text");
-        this.regionDescription = this.container.append("b")
+        this.metricDescription = this.container.append("span");
+        this.regionPreposition = this.container.append("span").attr("class", "robo-text");
+        this.regionDescription = this.container.append("span")
             .attr("class", "tappable")
             .on("click", function() {
                 thisTitle._didTapRegionDescription();
             });
-        this.groupByClause = this.container.append("div").attr("class", "robo-text").text(", by ");
-        this.groupByNoun = this.container.append("div").attr("class", "robo-text").text("day");
+        this.groupByClause = this.container.append("span").attr("class", "robo-text").text(", by ");
+        this.groupByNoun = this.container.append("span").attr("class", "robo-text").text("day");
 
         this.didTapStatAdjective = null;
         this.didTapRegionDescription = null;

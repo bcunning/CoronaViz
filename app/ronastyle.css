@@ -244,7 +244,7 @@ svg text {
     margin-bottom: 1.5em;
     margin-top:2em;
 }
-.robo-text-title b.active {
+.robo-text-title span.active {
     display: inline-block;
     padding: 3px 0px 1px 0px;
     border-bottom: 1px dotted #555;
@@ -271,7 +271,7 @@ a {
     color: #333;
 }
 
-.robo-text-title b.tappable {
+.robo-text-title span.tappable {
     display: inline-block;
     padding: 3px 0px 1px 0px;
     border-bottom: 1px dotted #555;

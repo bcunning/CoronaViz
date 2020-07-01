@@ -118,7 +118,7 @@ export default class ChartDescription {
     }
 
     _hoverDivForValue(value, ID) {
-        return "<div class=\"robo-description-hover unselectable\" id=\"" + ID + "\">" + value + "</div>";
+        return "<span class=\"robo-description-hover unselectable\" id=\"" + ID + "\">" + value + "</span>";
     }
 
     _formatDataQuantity(value, evaluator) {

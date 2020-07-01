@@ -23,8 +23,8 @@ export default class VizHeader {
             .style("text-align", textAlign);
         this.titleNav = new NavControl(this.titleContainer);
         this.titleTextContainer = this.titleNav.container.append("div").attr("class", "title-text-container");
-        this.virusName = this.titleTextContainer.append("div").attr("class", "robo-text").text(PANDEMIC_NAME + " ");
-        this.regionPreposition = this.titleTextContainer.append("div").attr("class", "robo-text");
+        this.virusName = this.titleTextContainer.append("span").attr("class", "robo-text").text(PANDEMIC_NAME + " ");
+        this.regionPreposition = this.titleTextContainer.append("span").attr("class", "robo-text");
         this.regionSelect = new ResizingSelect(this.titleTextContainer);
 
         // Subtitle description of data
