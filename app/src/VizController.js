@@ -1009,7 +1009,7 @@ export default class VizController {
     _pageAttribution(parentElementSelection) {
         let result = parentElementSelection.append("div")
             .attr("class", "attribution-footer content-column")
-            .html("<p>Data is updated and aggregated every hour according to the following open-source datasets:</p><p>Case and death data is reported via the <a href=\"https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html\">New York Times</a>. Testing and hospitalization data is reported via the <a href=\"https://covidtracking.com/\">COVID Tracking Project</a>. Visitation data is calculated via <a href=\"https://www.google.com/covid19/mobility/\">Google Community Mobility Reports</a>.</p><p>Site is developed and maintained by <a href=\"https://www.twitter.com/codeblue87\">Ben Cunningham</a>. Front-end code is available on <a href=\"https://github.com/bcunning/CoronaViz\">github</a>.</p>");
+            .html("<p>Data is updated and aggregated every hour according to the following open-source datasets:</p><p>Case and death data is reported via <a href=\"https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html\">The New York Times</a>. Testing and hospitalization data is reported via the <a href=\"https://covidtracking.com/\">COVID Tracking Project</a>. Visitation data is calculated via <a href=\"https://www.google.com/covid19/mobility/\">Google Community Mobility Reports</a>.</p><p>Site is developed and maintained by <a href=\"https://www.twitter.com/codeblue87\">Ben Cunningham</a>. Front-end code is available on <a href=\"https://github.com/bcunning/CoronaViz\">github</a>.</p>");
         return result;
     }
 }
