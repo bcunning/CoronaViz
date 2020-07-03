@@ -233,13 +233,6 @@ export default class EvaluatorLibrary {
         return result;
     }
 
-    static nationalCaseSliderEvaluator() {
-        let result = EvaluatorLibrary.confirmedCaseEvaluator();
-        result.maxPowerOfTen = 6.0;
-        result.minAlpha = 0.0;
-        return result;
-    }
-
     static newConfirmedCaseEvaluator() {
         let result = EvaluatorLibrary.confirmedCaseEvaluator();
         result.title = "New cases";
@@ -393,30 +386,6 @@ export default class EvaluatorLibrary {
 
     static newTestGraphicEvaluator(dateRange = null) {
         return this.graphicEvaluator(this.newTestTrendEvaluator(), this.newTestEvaluator(), dateRange);
-    }
-
-    static caseGrowthRate() {
-        let result = EvaluatorLibrary.newConfirmedCaseEvaluator();
-        result.title = "Case growth rate";
-        result.noun = "growth";
-        result.setBaseStat(function (evaluator, snapshot) { return snapshot.infection.cases.rateOfChange; });
-        result._intensityForSnapshot = function(evaluator, snapshot) {
-            return evaluator.valueForSnapshot(snapshot) / 2.0;
-        };
-
-        return result;
-    }
-
-    static deathGrowthRate() {
-        let result = EvaluatorLibrary.newDeathEvaluator();
-        result.title = "Death growth rate";
-        result.noun = "growth";
-        result.setBaseStat(function (evaluator, snapshot) { return snapshot.infection.deaths.rateOfChange; });
-        result._intensityForSnapshot = function(evaluator, snapshot) {
-            return evaluator.valueForSnapshot(snapshot) / 2.0;
-        };
-
-        return result;
     }
 
     static newDeathEvaluator() {

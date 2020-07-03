@@ -122,3 +122,5 @@ app/.idea/modules.xml
 app/.idea/misc.xml
 app/.idea/app.iml
 .idea/workspace.xml
+app/.htaccess
+app/lib/CoronaBundle-min.js

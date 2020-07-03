@@ -66,7 +66,6 @@ export default class MapVisualization {
         this._evaluator = evaluator;
 
         // Delegate callbacks
-        this.onSliderValueChanged = null;
         this.onRegionClicked = null;
         this.onRegionMouseOver = null;
         this.onRegionMouseOut = null;
@@ -101,12 +100,11 @@ export default class MapVisualization {
                 thisViz._didClickOcean(thisViz); // Clicking on the background will reset it.
             });
 
-        // Geometry layers: state, county, overlay
+        // Geometry layers: nation, state, county
         this._baseLayer = this.svg.append("g");
 
         this._nationLayer = this._baseLayer.append("g");
         this._countyLayer = this._baseLayer.append("g").attr("class", "county-layer");
-        //this._overlayLayer = this._baseLayer.append("g");
         this._stateLayer = this._baseLayer.append("g").attr("class", "state-layer");
 
         // Projection setup
@@ -121,7 +119,6 @@ export default class MapVisualization {
         this._createNation(this._nationLayer, this.nationFeature, this._geoPath);
         this._createStates(this._stateLayer, this.stateFeatures, this._geoPath);
         this._createCounties(this._countyLayer, this.countyFeatures, this._geoPath);
-        //this._createOverlays(this._countyLayer, this._overlayLayer, this.countyFeatures);
 
         this._parseDimensions();
         this.resetZoom(false)
@@ -141,9 +138,12 @@ export default class MapVisualization {
     }
 
     resetZoom(animated = true, duration = MAP_REGION_TRANSITION_DURATION) {
-        let baseBox = new CGRect(0, 0, this.desiredWidth, this.desiredHeight);
-        this.zoomToBox(baseBox, animated, MAP_ZOOMED_OUT_PADDING_FACTOR, duration);
+        this.zoomToBox(this.baseBox(), animated, MAP_ZOOMED_OUT_PADDING_FACTOR, duration);
         this._zoomedBounds = null;
+    }
+
+    baseBox() {
+        return new CGRect(0, 0, this.desiredWidth, this.desiredHeight);
     }
 
     zoomToBox(boundingBox, animated = true, paddingFactor = null, duration = MAP_REGION_TRANSITION_DURATION) {
@@ -152,7 +152,13 @@ export default class MapVisualization {
         const y0 = boundingBox.y;
         const y1 = boundingBox.y + boundingBox.height;
 
-        this._zoomedBounds = boundingBox;
+        // zoomBounds is used to determine when a highlighted region is scrolled away from.
+        // We don't want to enable this on counties, it causes too much region-swap thrash.
+        // Keep it at the state and coalition level for now.
+        if (!this._regionIDsContainCounty([this._highlightedRegionID])) {
+            this._zoomedBounds = boundingBox;
+        }
+
         let centerPoint = [(x0 + x1) / 2.0, (y0 + y1) / 2.0];
         let scale = this._scaleForBoundingBox(boundingBox, paddingFactor);
 
@@ -161,22 +167,26 @@ export default class MapVisualization {
         if (animated) {
             svgSelection = svgSelection.transition().duration(duration);
         }
+        let onEnd = function () {
+            thisMap._finishedZoomTransition();
+        };
         svgSelection.call(this._zoom.transform,
             zoomIdentity
                 .translate(this.activeWidth / 2, this.activeHeight / 2)
                 .scale(scale)
                 .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
             centerPoint)
-            .on("end", function () {
-                thisMap._finishedZoomTransition();
-            });
+            .on("end", onEnd);
+        if (!animated) {
+            onEnd();
+        }
     }
 
     _updateZoomFunction(minScale = null) {
         if (minScale === null) {
-            let maxMapRect = new CGRect(0, 0, this.desiredWidth, this.desiredHeight);
-            minScale = this._scaleForBoundingBox(maxMapRect, MAP_ZOOMED_OUT_PADDING_FACTOR);
+            minScale = this._scaleForBoundingBox(this.baseBox(), MAP_ZOOMED_OUT_PADDING_FACTOR);
         }
+
         let thisViz = this;
         this._zoom = zoom()
             .scaleExtent([minScale, this.maxScale])
@@ -199,11 +209,15 @@ export default class MapVisualization {
     }
 
     boundingBoxForRegion(regionID) {
+        if (regionID === NATION_DEFAULT_ID) {
+            return this.baseBox();
+        }
+
         const path = this._pathSelectionForRegionID(regionID).node();
         return CGRect.fromSVGRect(path.getBBox());
     }
 
-    boundingBoxForRegions(regionIDs) {
+    boundingBoxForRegions(regionIDs, padding = 1.0) {
         if (regionIDs.length === 0) {
             return null;
         }
@@ -218,6 +232,8 @@ export default class MapVisualization {
                 aggregateBox.unionRect(regionBounds);
             }
         });
+
+        aggregateBox.expandBy(padding);
 
         return aggregateBox;
     }
@@ -264,7 +280,7 @@ export default class MapVisualization {
         this.highlightRegionsWithIDs(regionID === null ? [] : [regionID]);
     }
 
-    highlightRegionsWithIDs(regionIDs) {
+    highlightRegionsWithIDs(regionIDs, animated = true) {
         let isUnhighlighting = this._regionIDsRepresentNation(regionIDs);
 
         // If we're already not highlighting, bail
@@ -273,14 +289,12 @@ export default class MapVisualization {
         }
 
         let isState = this._regionIDsContainState(regionIDs);
-        let wasCounty = this._regionIDsContainCounty(this._highlightedRegionID ? [this._highlightedRegionID] : null);
-        let isCounty = this._regionIDsContainCounty(regionIDs);
         let isGroup = (regionIDs.length > 1);
 
         // This update must go before the following update or else it will stomp on the fill transition
         // Prolly some d3 thing where you need to merge transitions instead of creating a new one?
         let regionToStroke = isGroup ? null : regionIDs[0]; // Only highlight singles for now, until we can generate union convex path (prolly not worth it)
-        this._setHighlightedRegionWithID(regionToStroke, !(wasCounty && isCounty)); // Don't animate if we're moving between counties
+        this._setHighlightedRegionWithID(regionToStroke, animated);
 
         if (isState || isUnhighlighting) {
             let thisMap = this;
@@ -289,9 +303,14 @@ export default class MapVisualization {
             thisMap._stateLayer.style("pointer-events", isUnhighlighting ? "all" : "none");
             thisMap.currentHighlightState =  isUnhighlighting ? MapHighlightState.ResettingHighlight : MapHighlightState.SettingHighlight;
 
-            this._stateLayer.selectAll("path.statePath")
-                .transition().duration(MAP_REGION_TRANSITION_DURATION)
-                .attr("fill", function (currentFeature) {
+            let stateSelection = this._stateLayer.selectAll("path.statePath");
+            if (animated) {
+                stateSelection = stateSelection.transition().duration(MAP_REGION_TRANSITION_DURATION);
+            }
+            let onEnd = function() {
+                thisMap.currentHighlightState = isUnhighlighting ? MapHighlightState.NoHighlight : MapHighlightState.Highlighted;
+            };
+            stateSelection.attr("fill", function (currentFeature) {
                     let isActive = isUnhighlighting || targetRegionIDs.has(currentFeature.id);
                     return isActive ? STATE_DEFAULT_FILL : STATE_INACTIVE_FILL;
                 })
@@ -303,9 +322,10 @@ export default class MapVisualization {
                     let isSelectedRegion = targetRegionIDs.has(currentFeature.id);
                     return (isSelectedRegion && !isGroup) ? "none" : "all";
                 })
-                .on("end", function() {
-                    thisMap.currentHighlightState = isUnhighlighting ? MapHighlightState.NoHighlight : MapHighlightState.Highlighted;
-                });
+                .on("end", onEnd);
+            if (!animated) {
+                onEnd();
+            }
         } else {
             // If we changed fill parameters or pointer behavior for counties, this is where we'd do it
         }
@@ -693,37 +713,12 @@ export default class MapVisualization {
             });
     }
 
-    _createOverlays(countyContainerLayer, overlayContainerLayer, features) {
-        let thisViz = this;
-        overlayContainerLayer.selectAll("circle")
-            .data(features)
-            .enter()
-            .append("circle")
-            .attr("display", "none")
-            .attr("regionID", function (currentFeature){
-                return MapVisualization.pathRegionID(currentFeature.id)
-            } )
-            .attr("cx", function (currentFeature){
-                let boundingBox = thisViz.boundingBoxForRegion(currentFeature.id);
-                return (boundingBox.x + 0.5*boundingBox.width).toString();
-            } )
-            .attr("cy", function (currentFeature){
-                let boundingBox = thisViz.boundingBoxForRegion(currentFeature.id);
-                return (boundingBox.y + 0.5*boundingBox.height).toString();
-            } )
-            .attr("stroke", "red")
-            .attr("stroke-width", "1.0")
-            .attr("fill", "rgba(255, 0, 0, 0.05)")
-            .attr("r", "1.0");
-    }
-
     // Update
     updateMapForDay(day, countyData, animated) {
         this._currentDay = day;
         this._currentData = countyData;
 
         this._updateCountiesForDay(day, countyData, animated);
-        //this._updateOverlaysForDay(day, dataByCountyName, animated);
     }
 
     _updateCountiesForDay(day, countyData, animated) {
@@ -741,46 +736,6 @@ export default class MapVisualization {
                 }
             }
             return COUNTY_DEFAULT_FILL;
-        });
-    }
-
-    _updateOverlaysForDay(day, dataByCountyID, animated) {
-        let selection = this._overlayLayer.selectAll("circle");
-        if (animated) {
-            selection = selection.transition().duration(300);
-        }
-
-        let thisViz = this;
-        selection.attr( "r", function(county) {
-            let currentCountyID = county.id;
-            let countyOnThisDay = dataByCountyID.get(currentCountyID);
-            if (countyOnThisDay) {
-                let intensity = thisViz._evaluator.intensityForSnapshot(countyOnThisDay);
-
-                if (intensity >= 0.0) {
-                    let minRadius = 1.0;
-                    let maxRadius = 20.0;
-
-                    let radius = minRadius + (maxRadius - minRadius)*intensity;
-
-                    return radius.toString();
-                }
-            }
-
-            // Null-op
-            return this.attributes.r.value;
-
-        }).attr("display", function(county){
-            let currentCountyID = county.id;
-            let countyOnThisDay = dataByCountyID.get(currentCountyID);
-            if (countyOnThisDay) {
-                let currentValue = thisViz._evaluator.valueForSnapshot(countyOnThisDay);
-                if (currentValue >= 0.0) {
-                    return "initial";
-                }
-            }
-
-            return "none";
         });
     }
 

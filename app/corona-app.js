@@ -5,7 +5,7 @@ import Atlas from './src/Atlas.js'
 import InfectionTimeSeries from './src/InfectionTimeSeries.js'
 import VizController from './src/VizController.js'
 
-const STATIC_ASSET_DOMAIN = "";
+const STATIC_ASSET_DOMAIN = "/";
 const STATIC_ASSET_THUMBPRINT = "?d=LastUpdateToken";
 
 var loadedCountyData = false;
@@ -71,6 +71,7 @@ function loadedData(countryGeometry, rawData, countryMobility) {
             if (countyData !== null) {
                 console.time("Update county fill");
                 vizController.setCountyData(countyData);
+                vizController.processURLPath();
                 console.timeEnd("Update county fill");
             }
 
@@ -88,7 +89,6 @@ function loadedData(countryGeometry, rawData, countryMobility) {
         coalitionData,
         USARegion,
         countryGeometry);
-    vizController.setDay(vizController.nationInfectionData.dayForPercentElapsed(1), false);
     vizController.didSelectCounty = function(currentCountyData) {
         if (!loadedCountyData) {
             loadedCountyData = true;

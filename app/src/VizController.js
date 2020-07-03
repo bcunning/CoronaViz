@@ -1,18 +1,13 @@
 import { format } from 'd3-format';
-import { timer } from "d3-timer";
 
 import CGRect from "./CGRect.js";
 import DataTable from "./DataTable.js";
-import DateSlider from "./DateSlider.js";
 import EvaluatorLibrary from "./EvaluatorLibrary.js";
 import Infection from "./Infection.js";
 import MapVisualization from "./MapVisualization.js";
 import MobilityEvaluator from "./MobilityEvaluator.js";
 import OverTimeVisualization from "./OverTimeVisualization.js";
 import RankedBarVisualization from "./RankedBarVisualization.js";
-import RegionPicker from "./RegionPicker.js";
-import RegionPickerSection from "./RegionPickerSection.js";
-import SliderGradientStop from "./SliderGradientStop.js";
 import Stat from "./Stat.js";
 import StatDashboard from "./StatDashboard.js";
 import VizHeader from "./VizHeader.js";
@@ -21,6 +16,7 @@ import { NATION_DEFAULT_ID } from "./Constants.js";
 import OverTimeSeries from "./OverTimeSeries";
 import {RegionType} from "./Region";
 import TableConfigurationView from "./TableConfigurationView";
+import Atlas from "./Atlas";
 
 const MAP_VIZ_WIDTH = 900;
 const MAP_VIZ_HEIGHT = 450;
@@ -30,7 +26,7 @@ const RANKED_BAR_VIZ_HEIGHT = 400;
 
 const HEADER_COLLAPSE_SCROLL_DISTANCE = 20.0;
 
-const MS_PER_DAY = 400.0;
+const BROWSER_BACK_BUTTON_ELEMENT = "BrowserBackButton";
 
 export default class VizController {
     constructor(parentElementSelection,
@@ -44,7 +40,11 @@ export default class VizController {
         this.firstDay = "2020-03-04";
         this.baseRegion = nationRegion;
         this._nextRegionQueue = [];
+        this.previouslySelectedRegionID = null;
+        this._inRegionSet = false;
+        this._inDataChange = false;
         this.didSelectCounty = null;
+
         const thisController = this;
 
         this.setNationData(nationInfectionData);
@@ -56,7 +56,6 @@ export default class VizController {
 
         // This spacer always needs to be the first thing added to parentElementSelection
         this.headerSpacer = parentElementSelection.append("div").attr("class", "header-spacer");
-        this.slider = null;//new DateSlider(parentElementSelection, dateRange, EvaluatorLibrary.nationalCaseSliderEvaluator());
         this.statDashboard = new StatDashboard(parentElementSelection, this._coreStatsForSnapshot(null));
         this.tableConfiguration = new TableConfigurationView(parentElementSelection, dateRange);
         this.tableConfiguration.didUpdateEvaluators = function (newEvaluators) {
@@ -94,17 +93,9 @@ export default class VizController {
 
         this.attributionDetails = this._pageAttribution(parentElementSelection);
 
-        // This must be the final (non-floating) element appended to parentElementSelection
-        this.footerSpacer = parentElementSelection.append("div").attr("class", "footer-spacer");
-
-        this._regionPickerActive = false;
-
         // Header Components
         this.headerContainer = parentElementSelection.append("div").attr("class", "fixed-header-summary");
         this.header = new VizHeader(this.headerContainer, this._regionMenuGroups(), dateRange);
-        if (this.header.compactTrendLine !== undefined) {
-            this.overTimeCharts.unshift(this.header.compactTrendLine);
-        }
 
         this.map = new MapVisualization(MAP_VIZ_WIDTH,
                                         MAP_VIZ_HEIGHT,
@@ -114,18 +105,12 @@ export default class VizController {
 
         this.header.setFeaturedCollapseElement(this.map);
 
-        // Footer components
-        this.footerContainer = parentElementSelection.append("div").attr("class", "fixed-control");
-        this.regionPicker = null;//new RegionPicker(this.footerContainer, this._regionSections());
-
         this._updateFixedRegionSpacing();
 
         // View-state
         this.selectedRegionID = nationRegion.ID;
         this.hoveredRegionID = null;
         this.lastWindowWidthUpdate = window.outerWidth;
-
-        this.updateSlider();
 
         // Callbacks
         window.addEventListener('resize', function() {
@@ -135,15 +120,14 @@ export default class VizController {
             thisController.didScroll(this);
         })
 
-        // Set day based on slider updates
-        if (this.slider !== null) {
-            this.slider.onSliderValueChanged = function(newSliderValue) {
-                thisController.pause();
-                const newDay = thisController.nationInfectionData.dayForPercentElapsed(newSliderValue);
-                thisController.setDay(newDay, false);
-            };
-        }
+        window.onpopstate = function(e){
+            let region = thisController.deepestAvailableRegionFromCurrentURLPath();
+            let regionID = region.ID;
 
+            if (regionID !== thisController.selectedRegionID) {
+                thisController.setRegion(regionID, true, BROWSER_BACK_BUTTON_ELEMENT);
+            }
+        };
 
         // Clicks
 
@@ -218,6 +202,13 @@ export default class VizController {
         this.collapsed = false;
         this.lastScrollOffset = 0;
         this.didScroll(window, false);
+
+        this.processURLPath(false);
+        this.setDay(this.nationInfectionData.lastDayString());
+        if (this.selectedRegionID !== this.baseRegion.ID) {
+            this.zoomToRegion(this.selectedRegionID, false);
+            this.map.highlightRegionsWithIDs(this._mapRegionIDsForRegionID(this.selectedRegionID), false);
+        }
     }
 
     floatingHeaderBottomY() {
@@ -278,9 +269,6 @@ export default class VizController {
                 if (this.header !== undefined) {
                     this.header.updateForOptions(this._regionMenuGroups());
                 }
-                if (this.regionPicker !== undefined && this.regionPicker !== null) {
-                    this.regionPicker.updateForRegionSections(this._regionSections());
-                }
 
                 this.updateRankedChartForDay(this.currentDay, false);
                 this.updateDashboard(false);
@@ -292,14 +280,93 @@ export default class VizController {
     }
 
     setCountyData(timeSeries) {
+        let wasEmpty = (this.countyInfectionData == null);
         if (timeSeries) {
             this.countyInfectionData = timeSeries.timeSeriesBeginningAt(this.firstDay);
+            if (wasEmpty && this._regionIsState(this.dataTable.aggregateRegionID)) {
+                this.updateDataTable(false);
+            }
             if (this.map !== undefined) {
                 this.updateMapForDay(this.currentDay, true);
             }
         } else {
             this.countyInfectionData = null;
         }
+    }
+
+    processURLPath(requireUpdate = true, animated = false) {
+        let regionHierarchyPath = VizController.CurrentURLComponents();
+        let region = this.deepestAvailableRegionFromBreadCrumb(regionHierarchyPath);
+        let invalidCounty = (this.countyInfectionData !== null && regionHierarchyPath.length > 1 && !this._regionIsCounty(region.ID));
+        let invalidStateOrCoalition = (regionHierarchyPath.length > 0 && region.ID === this.baseRegion.ID);
+        if (invalidCounty || invalidStateOrCoalition) {
+            console.log("404: no region for: " + regionHierarchyPath.last());
+            this.updateBrowserStateForRegion(this.regionForRegionID(this.selectedRegionID));
+            return;
+        }
+        if (requireUpdate) {
+            this.setRegion(region.ID, true, this, null, animated);
+        } else {
+            this.selectedRegionID = region.ID;
+        }
+    }
+
+
+    static CurrentURLComponents() {
+        return window.location.pathname.split('/').filter(function (string) {
+            return string.length > 0;
+        });
+    }
+
+    deepestAvailableRegionFromCurrentURLPath() {
+        let regionHierarchyPath = VizController.CurrentURLComponents();
+        return this.deepestAvailableRegionFromBreadCrumb(regionHierarchyPath);
+    }
+
+    _decodeURLRegionName(regionName) {
+        return regionName.replace("-", " ");
+    }
+
+    _encodeURLRegionName(regionName) {
+        return regionName.replace(" ", "-");
+    }
+
+    deepestAvailableRegionFromBreadCrumb(regionNames) {
+        if (regionNames.length === 0) {
+            return this.baseRegion;
+        }
+
+        let rootName = this._decodeURLRegionName(regionNames[0]);
+        let rootDataset = this._datasetForRegionName(rootName);
+        if (rootDataset === null) {
+            return this.baseRegion;
+        }
+        let rootRegion = rootDataset.regionWithName(rootName);
+
+        // If we've only specified one path, or we don't have any county data to go further anyway, we're done.
+        if (regionNames.length === 1 || this.countyInfectionData === null) {
+            return rootRegion;
+        }
+
+        // Otherwise see if there's a county with the relevant name
+        let countyName = Atlas.normalizeRegionName(this._decodeURLRegionName(regionNames[1]));
+        let counties = this.countyInfectionData.topRegions(0, function (snapshot) {
+                if (snapshot.region.parentRegion !== null) {
+                    if (snapshot.region.parentRegion.ID === rootRegion.ID) {
+                        let normalizedName = Atlas.normalizeRegionName(snapshot.region.name);
+                        return normalizedName === countyName;
+                    }
+                }
+                return false;
+            },
+            EvaluatorLibrary.regionNameEvaluator()
+        );
+
+        if (counties === null || counties.length === 0) {
+            return rootRegion;
+        }
+
+        return counties[0];
     }
 
     updateCountryGeometry(countryGeomery) {
@@ -383,20 +450,10 @@ export default class VizController {
                 EvaluatorLibrary.newDeathEvaluator()];
     }
 
-    _setRegionPickerActive(isActive) {
-        if (this._regionPickerActive !== isActive && this.regionPicker !== null) {
-            this._regionPickerActive = isActive;
-            this.footerContainer.attr("active", isActive ? "" : null);
-            this._updateFixedRegionSpacing();
-        }
-    }
-
     _updateFixedRegionSpacing() {
-        // Fix scroll sizing so that floating header and footer don't obscure any content
+        // Fix scroll sizing so that floating header doesn't obscure any content
         let headerOffsetHeight = this.headerContainer.node().offsetHeight;
         this.headerSpacer.style("height", headerOffsetHeight + "px");
-        let footerOffsetHeight = this._regionPickerActive ? this.footerContainer.node().offsetHeight : 0;
-        this.footerSpacer.style("height", footerOffsetHeight + "px");
     }
 
     _regionMenuGroups() {
@@ -432,28 +489,6 @@ export default class VizController {
         return result;
     }
 
-    _regionSections() {
-        let result = [];
-
-        let majorRegions = [this.baseRegion];
-        if (this.coalitionInfectionData !== null) {
-            let coalitionRegions = this.coalitionInfectionData.topRegions();
-            majorRegions = majorRegions.concat(coalitionRegions);
-        }
-        result.push(new RegionPickerSection("Regions", majorRegions));
-
-        if (this.stateInfectionData !== null) {
-            let continentalStatesFilter = function(snapshot) { return snapshot.region.ID <= "56"; };
-            let topStates = this.stateInfectionData.topRegions(8, continentalStatesFilter);
-            result.push(new RegionPickerSection("Top states, by confirmed cases", topStates));
-
-            let bottomStates = this.stateInfectionData.topRegions(8, continentalStatesFilter, EvaluatorLibrary.confirmedCaseEvaluator(), true);
-            result.push(new RegionPickerSection("States with fewest cases", bottomStates),);
-        }
-
-        return result;
-    }
-
     _currentInfectionSnapshot() {
         let dataset = this._currentDataset();
         let day = this.currentDay;
@@ -466,13 +501,8 @@ export default class VizController {
         let infection = infectionSnapshot ? infectionSnapshot.infection : Infection.NullInfection();
         let formatter = format(",");
         let result = [];
-        // result.push(new Stat("New Cases", infection.cases ? formatter(infection.cases.change) : "N/A"));
-        // result.push(new Stat("New Deaths", infection.deaths ? formatter(infection.deaths.change) : "N/A"));
-        // result.push(new Stat("Total Tests", infection.totalTests ? formatter(infection.totalTests.value) : "N/A"));
-        // result.push(new Stat("Percent Positive", infection.percentPositive()));
         result.push(new Stat("Total Cases", infection.cases ? formatter(infection.cases.value) : "N/A"));
         result.push(new Stat("Deaths", infection.deaths ? formatter(infection.deaths.value) : "N/A"));
-
         return result;
     }
 
@@ -576,21 +606,22 @@ export default class VizController {
         return [regionID];
     }
 
-    zoomToRegion(regionID) {
+    zoomToRegion(regionID, animated = true) {
         let mapRegionIDs = this._mapRegionIDsForRegionID(regionID);
         if (regionID) {
-            let regionBounds = this.map.boundingBoxForRegions(mapRegionIDs);
-            this.map.zoomToBox(regionBounds);
+            let padding = this._regionIsCounty(regionID) ? 3.0 : 1.0;
+            let regionBounds = this.map.boundingBoxForRegions(mapRegionIDs, padding);
+            this.map.zoomToBox(regionBounds, animated);
         }
     }
 
-    setRegion(regionID, zoomToRegion = true, tappedElement = null, tappedRegionID = null) {
+    setRegion(regionID, zoomToRegion = true, tappedElement = null, tappedRegionID = null, animated = true) {
         let isRepeatedSelection = (this.selectedRegionID === regionID);
         if (isRepeatedSelection && !this._elementSupportsRepeatedSelection(tappedElement, tappedRegionID)) {
             return;
         }
 
-        if (this._inRegionSet) {
+        if (this._inRegionSet || this._inDataChange) {
             return;
         }
 
@@ -605,30 +636,21 @@ export default class VizController {
             this.didSelectCounty(this.countyInfectionData);
         }
 
-        if (zoomToRegion) {
-            this.zoomToRegion(regionID);
-        }
-
-        // Maintain visual position of the tapped element.
+        // Maintain visual position of the currently focused element.
         let priorCenterElementYCoord = -1;
-        let centeredElement = this.currentlyFocusedChartElement();
+        let isAtTop = this.lastScrollOffset < HEADER_COLLAPSE_SCROLL_DISTANCE;
+        let centeredElement = isAtTop ? null : this.currentlyFocusedChartElement();
         if (centeredElement !== null) {
             priorCenterElementYCoord = centeredElement.getBoundingClientRect().y;
         }
 
-        let shouldAnimate = true;
+        this._updateForDataChange(zoomToRegion, false, tappedElement, tappedRegionID, animated);
 
-        this.header.setBackButtonVisible((this.selectedRegionID !== this.baseRegion.ID), shouldAnimate);
-        this.updateHeader(shouldAnimate);
-
-        this.map.highlightRegionsWithIDs(this._mapRegionIDsForRegionID(regionID));
-        this.updateDashboard(shouldAnimate);
-        this.updateDataTable(shouldAnimate, tappedElement, tappedRegionID)
-        this.updateTitles(shouldAnimate);
-        this.updateOverTimeChartsForDay(this.currentDay, shouldAnimate);
-        this.updateRankedChartForDay(this.currentDay, shouldAnimate);
-        this.updateSlider();
-        this.updateRegionPicker();
+        // Don't push new state if this is the result of navigating browser state
+        // (e.g. the user hitting the back button)
+        if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT) {
+            this.updateBrowserStateForRegion(this._currentRegion());
+        }
 
         if (centeredElement !== null) {
             let newYCoord = centeredElement.getBoundingClientRect().y;
@@ -638,6 +660,35 @@ export default class VizController {
         }
 
         this._inRegionSet = false;
+    }
+
+    _updateForDataChange(zoomToRegion = true, redrawMap = true, tappedElement = null, tappedRegionID = null, animated = false) {
+
+        if (this._inDataChange) {
+            return;
+        }
+
+        this._inDataChange = true;
+
+        this.header.setBackButtonVisible((this.selectedRegionID !== this.baseRegion.ID), animated);
+        this.updateHeader(animated);
+
+        if (redrawMap) {
+            this.updateMapForDay(this.currentDay, animated);
+        }
+
+        this.map.highlightRegionsWithIDs(this._mapRegionIDsForRegionID(this.selectedRegionID), animated);
+        if (zoomToRegion) {
+            this.zoomToRegion(this.selectedRegionID, animated);
+        }
+
+        this.updateDashboard(animated);
+        this.updateDataTable(animated, tappedElement, tappedRegionID)
+        this.updateTitles(animated);
+        this.updateOverTimeChartsForDay(this.currentDay, animated);
+        this.updateRankedChartForDay(this.currentDay, animated);
+
+        this._inDataChange = false;
     }
 
     regionForRegionID(regionID) {
@@ -684,15 +735,7 @@ export default class VizController {
     }
 
     _shouldZoomToRegion(regionID) {
-        return this._regionIsState(regionID) || this._regionIsCoalition(regionID);
-    }
-
-    updateSlider() {
-        if (this.slider !== null) {
-            let regionID = !this.selectedRegionID ? NATION_DEFAULT_ID : this.selectedRegionID;
-            let sliderData = this._datasetForRegionID(regionID);
-            this._updateSliderForTimeSeries(sliderData, regionID);
-        }
+        return this._regionIsState(regionID) || this._regionIsCoalition(regionID) || this._regionIsCounty(regionID);
     }
 
     _datasetForRegionID(regionID) {
@@ -711,6 +754,27 @@ export default class VizController {
             return this.countyInfectionData;
         } else if (this.coalitionInfectionData !== null && this.coalitionInfectionData.containsRegion(regionID)) {
             return this.coalitionInfectionData;
+        }
+
+        return null;
+    }
+
+    _datasetForRegionName(regionName) {
+        if (regionName === undefined) {
+            return null;
+        }
+        if (regionName === null) {
+            return this.nationInfectionData;
+        }
+
+        if (this.nationInfectionData !== null && this.nationInfectionData.containsRegionName(regionName)) {
+            return this.nationInfectionData;
+        } else if (this.coalitionInfectionData !== null && this.coalitionInfectionData.containsRegionName(regionName)) {
+            return this.coalitionInfectionData;
+        } if (this.stateInfectionData !== null && this.stateInfectionData.containsRegionName(regionName)) {
+            return this.stateInfectionData;
+        } else if (this.countyInfectionData !== null && this.countyInfectionData.containsRegionName(regionName)) {
+            return this.countyInfectionData;
         }
 
         return null;
@@ -743,23 +807,6 @@ export default class VizController {
         return this.regionForRegionID(this.selectedRegionID);
     }
 
-    _updateSliderForTimeSeries(timeSeries, regionID) {
-        let stops = [];
-        let numStops = 10;
-        let currentPercent = 0;
-        while (currentPercent <= 1.000001) {
-            let day = timeSeries.dayForPercentElapsed(currentPercent);
-            let snapshot = timeSeries.snapshotForDay(day, regionID);
-            if (snapshot !== 'undefined') {
-                stops.push(new SliderGradientStop(currentPercent, snapshot));
-            } else {
-                debugger;
-            }
-            currentPercent += 1.0 / numStops;
-        }
-        this.slider.updateSliderForStops(stops);
-    }
-
     updateDashboard(animated) {
         let newSnapshot = this._currentInfectionSnapshot();
         let newStats = this._coreStatsForSnapshot(newSnapshot);
@@ -779,7 +826,8 @@ export default class VizController {
         this.dataTable.dataIsIncomplete = this.header.dateSelector.isLatest() && this.header.dateSelector.mostRecentDataIsFromToday();
 
         if (this._elementRequiresUpdateForRegion(tappedElement, tappedRegionID)) {
-            let childrenAreSupported = tableEvaluator.supportsRegionType(selectedRegion.type + 1);
+            let childType = selectedRegion.type + 1;
+            let childrenAreSupported = tableEvaluator.supportsRegionType(childType);
             if (!childrenAreSupported && currentLevelIsSupported) {
                 // We only want to display coalition regions if someone has explicitly selected one or is traversing up the region hierarchy.
                 // Make it so that data table skips this level by default when data isn't available at lower levels.
@@ -794,10 +842,32 @@ export default class VizController {
         this.dataTable.updateForHighlightedRegion(selectedRegion.ID);
     }
 
+    updateBrowserStateForRegion(region) {
+        console.log("Updating browser history for: " + region.name);
+        let isBaseRegion = (region.ID === this.baseRegion.ID);
+        let URL = isBaseRegion ? "/" : this.URLPathForRegion(region);
+        history.pushState({"regionID" : region.ID}, document.title, URL);
+    }
+
+    URLPathForRegion(region) {
+        let components = [region];
+        if (this._regionIsCounty(region.ID)) {
+            components.unshift(region.parentRegion);
+        }
+        let thisController = this;
+        components = components.map(function (region) {
+            return "/" + thisController._encodeURLRegionName(Atlas.normalizeRegionName(region.name));
+        })
+
+        let result = components.join("");
+        return result;
+    }
+
     updateTitles(animated) {
         let currentRegion = this.regionForRegionID(this.selectedRegionID);
         let thisController = this;
         document.title = "Coronavirus " + currentRegion.preposition + " " + currentRegion.qualifiedNameWithArticle();
+
         this.overTimeCharts.forEach(function (chart) {
             if (chart.title !== null) {
                 let isVisible = thisController.chartIsVisible(chart);
@@ -946,64 +1016,15 @@ export default class VizController {
         }
     }
 
-    updateRegionPicker() {
-        if (this._regionPickerActive && this.regionPicker !== null) {
-            this.regionPicker.selectRegionWithID(this.selectedRegionID);
-        }
-    }
-
     setDay(day, animated = false) {
         if (this.currentDay === day) {
             return;
         }
-        let isFirstUpdate = (this.currentDay === undefined);
+        this.previousDay = this.currentDay;
         this.currentDay = day;
+        let isFirstUpdate = (this.previousDay === undefined);
 
-        // We don't need to update map/titles for day updates.
-        if (isFirstUpdate) {
-            this.updateMapForDay(day, animated);
-            this.updateTitles(animated);
-        }
-
-        this.updateHeaderDay(animated);
-
-        this.updateDashboard(animated);
-        this.updateDataTable(animated);
-        this.updateRankedChartForDay(day, animated);
-        this.updateOverTimeChartsForDay(day, animated);
-
-        // Don't update the slider if this update is already a result of it being dragged (will cause rounding jitter)
-        if (this.slider !== null && !this.slider.isBeingDragged) {
-            this.slider.updateSliderForPercentComplete(this.nationInfectionData.percentElapsedForDay(day));
-        }
-    }
-
-    play() {
-        if (this.timer) {
-            this.timer.stop();
-        }
-
-        let days = this.nationInfectionData.days();
-        let currentDayIndex = 0;
-        let thisController = this;
-        this.timer = timer(function(elapsed) {
-            if(Math.floor(elapsed/MS_PER_DAY) > currentDayIndex) {
-                currentDayIndex++;
-                const currentDay = days.next();
-                if (currentDay.done) {
-                    thisController.timer.stop();
-                } else {
-                    thisController.setDay(currentDay.value, true);
-                }
-            }
-
-        }, 150);
-    }
-
-    pause() {
-        if (this.timer) {
-            this.timer.stop();
-        }
+        this._updateForDataChange(false, isFirstUpdate,null, null, animated);
     }
 
     _pageAttribution(parentElementSelection) {

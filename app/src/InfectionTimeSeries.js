@@ -39,8 +39,16 @@ export default class InfectionTimeSeries {
         return this.regionAtlas.has(regionID);
     }
 
+    containsRegionName(regionName) {
+        return this.regionAtlas.hasRegionWithName(regionName);
+    }
+
     regionForID(regionID) {
         return this.regionAtlas.regionWithID(regionID);
+    }
+
+    regionWithName(regionName) {
+        return this.regionAtlas.regionWithName(regionName);
     }
 
     dayForPercentElapsed(percent) {
@@ -50,6 +58,10 @@ export default class InfectionTimeSeries {
 
         let roundedTargetTime = Math.round(targetTime / MS_IN_DAY) * MS_IN_DAY;
         return this._dateStringForTime(roundedTargetTime);
+    }
+
+    lastDayString() {
+        return this._dateStringForTime(this.lastDay.getTime());
     }
 
     snapshotPrecedingSnapshot(snapshot, numDays = 1) {

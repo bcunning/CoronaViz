@@ -37,7 +37,7 @@ export default class DataTable {
             this.numDataRows = this._defaultNumRows();
         }
 
-        this.data = data;
+        this.data = data === null ? [] : data;
         this.highlightedRegionID = null;
 
         if (!deferRender) {

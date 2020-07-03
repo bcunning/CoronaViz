@@ -18,6 +18,17 @@ export default class CGRect {
         this.height = newBottom - newTop;
     }
 
+    expandBy(scaleFactor) {
+        let center = [this.x + this.width / 2.0, this.y + this.height / 2.0];
+        let expansionVector = [-scaleFactor * this.width / 2.0, -scaleFactor * this.height / 2.0];
+        let newOrigin = [center[0] + expansionVector[0], center[1] + expansionVector[1]];
+
+        this.x = newOrigin[0];
+        this.y = newOrigin[1];
+        this.width = scaleFactor * this.width;
+        this.height = scaleFactor * this.height;
+    }
+
     aspectRatio() {
         return this.width / this.height;
     }

@@ -3,6 +3,7 @@ import Region from './Region.js'
 export default class Atlas {
     constructor() {
         this._regionsByID = new Map();
+        this._regionsByName = new Map();
         this._regionIDAliases = new Map();
         this._aliasesByTargetID = new Map();
     }
@@ -25,6 +26,7 @@ export default class Atlas {
 
     registerRegion(region) {
         this._regionsByID.set(region.ID, region);
+        this._regionsByName.set(Atlas.normalizeRegionName(region.name), region);
     }
 
     registerIDAlias(aliasID, targetID) {
@@ -55,6 +57,18 @@ export default class Atlas {
             regionID = this._regionIDAliases.get(regionID);
         }
         return (this.regionWithID(regionID) !== undefined);
+    }
+
+    hasRegionWithName(regionName) {
+        return this.regionWithName(regionName) !== undefined;
+    }
+
+    regionWithName(regionName) {
+        return this._regionsByName.get(Atlas.normalizeRegionName(regionName));
+    }
+
+    static normalizeRegionName(name) {
+        return name.toLowerCase();
     }
 
     addAll(otherAtlas) {
