@@ -9,6 +9,7 @@ const STATIC_ASSET_DOMAIN = "/";
 const STATIC_ASSET_THUMBPRINT = "?d=LastUpdateToken";
 
 var loadedCountyData = false;
+var vizController = null;
 
 function loadedData(countryGeometry, rawData, countryMobility) {
 
@@ -35,8 +36,6 @@ function loadedData(countryGeometry, rawData, countryMobility) {
     }
 
     console.timeEnd("Process top-level Data");
-
-    let vizController = null;
 
     console.log("Begin County CSV Load");
     console.time("Load County CSVs");
@@ -78,7 +77,7 @@ function loadedData(countryGeometry, rawData, countryMobility) {
             console.timeEnd("Full Site Load");
         })
 
-    loadStateMobilityData(vizController, stateData);
+    loadStateMobilityData(stateData);
 
     console.log("Begin building initial view");
     console.time("Build initial view");
@@ -92,7 +91,7 @@ function loadedData(countryGeometry, rawData, countryMobility) {
     vizController.didSelectCounty = function(currentCountyData) {
         if (!loadedCountyData) {
             loadedCountyData = true;
-            loadCountyMobilityData(vizController, currentCountyData);
+            loadCountyMobilityData(currentCountyData);
         }
     }
     console.timeEnd("Build initial view");
@@ -110,7 +109,7 @@ Promise.all([json(STATIC_ASSET_DOMAIN + "topo/states-10m.json"),
         loadedData(values[0], values[1], values[2]);
     });
 
-function loadStateMobilityData(vizController, currentStateData) {
+function loadStateMobilityData(currentStateData) {
     console.time("Load State mobility data");
     Promise.all([json(STATIC_ASSET_DOMAIN + "processed-data/mobility-state.json" + STATIC_ASSET_THUMBPRINT)])
         .then(function(values) {
@@ -118,11 +117,14 @@ function loadStateMobilityData(vizController, currentStateData) {
             console.time("Process State mobility data");
             let stateMobilityJSON = values[0];
             currentStateData.updateForMobilityJSON(stateMobilityJSON);
+            if (vizController.isStateSelected()) {
+                vizController.updateMobilityChart();
+            }
             console.timeEnd("Process State mobility data");
         });
 }
 
-function loadCountyMobilityData(vizController, currentCountyData) {
+function loadCountyMobilityData(currentCountyData) {
     console.time("Load county mobility data");
     Promise.all([json(STATIC_ASSET_DOMAIN + "processed-data/mobility-county.json" + STATIC_ASSET_THUMBPRINT)])
         .then(function(values) {

@@ -309,6 +309,10 @@ export default class VizController {
         } else {
             this.selectedRegionID = region.ID;
         }
+
+        if (region.ID !== this.baseRegion.ID) {
+            this.resetRegionQueue();
+        }
     }
 
 
@@ -380,6 +384,10 @@ export default class VizController {
         this.updateOverTimeChart(mobilityChart, this.currentDay, this._currentRegion(), dataSlice, true);
     }
 
+    isStateSelected() {
+        return this._regionIsState(this.selectedRegionID);
+    }
+
     didResize() {
         let currentWidth = window.innerWidth;
         if (currentWidth !== this.lastWindowWidthUpdate) {
@@ -414,7 +422,7 @@ export default class VizController {
 
     enqueueTopRegions() {
         if (this.coalitionInfectionData !== null) {
-            this._nextRegionQueue = this.coalitionInfectionData.topRegions();
+            this._nextRegionQueue = this.coalitionInfectionData.topRegions(0, null, EvaluatorLibrary.newConfirmedCaseEvaluator());
         }
     }
 
