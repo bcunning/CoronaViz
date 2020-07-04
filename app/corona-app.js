@@ -70,7 +70,7 @@ function loadedData(countryGeometry, rawData, countryMobility) {
             if (countyData !== null) {
                 console.time("Update county fill");
                 vizController.setCountyData(countyData);
-                vizController.processURLPath();
+                vizController.processURLPath(true, false, true);
                 console.timeEnd("Update county fill");
             }
 

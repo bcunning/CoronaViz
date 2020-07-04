@@ -27,6 +27,7 @@ const RANKED_BAR_VIZ_HEIGHT = 400;
 const HEADER_COLLAPSE_SCROLL_DISTANCE = 20.0;
 
 const BROWSER_BACK_BUTTON_ELEMENT = "BrowserBackButton";
+const GOOGLE_ANALYTICS_ID = "UA-164933561-1";
 
 export default class VizController {
     constructor(parentElementSelection,
@@ -294,7 +295,7 @@ export default class VizController {
         }
     }
 
-    processURLPath(requireUpdate = true, animated = false) {
+    processURLPath(requireUpdate = true, animated = false, registerView = false) {
         let regionHierarchyPath = VizController.CurrentURLComponents();
         let region = this.deepestAvailableRegionFromBreadCrumb(regionHierarchyPath);
         let invalidCounty = (this.countyInfectionData !== null && regionHierarchyPath.length > 1 && !this._regionIsCounty(region.ID));
@@ -312,6 +313,10 @@ export default class VizController {
 
         if (region.ID !== this.baseRegion.ID) {
             this.resetRegionQueue();
+        }
+
+        if (registerView) {
+            this.registerPageView();
         }
     }
 
@@ -855,6 +860,18 @@ export default class VizController {
         let isBaseRegion = (region.ID === this.baseRegion.ID);
         let URL = isBaseRegion ? "/" : this.URLPathForRegion(region);
         history.pushState({"regionID" : region.ID}, document.title, URL);
+        this.registerPageView();
+    }
+
+    registerPageView() {
+        if (typeof gtag === "function") {
+            let URL = window.location.pathname;
+            let title = document.title;
+            gtag('config', GOOGLE_ANALYTICS_ID, {
+                'page_title' : title,
+                'page_path': URL
+            });
+        }
     }
 
     URLPathForRegion(region) {
