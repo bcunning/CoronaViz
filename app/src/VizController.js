@@ -324,11 +324,11 @@ export default class VizController {
     }
 
     _decodeURLRegionName(regionName) {
-        return regionName.replace("-", " ");
+        return regionName.replace(/-/g, " ");
     }
 
     _encodeURLRegionName(regionName) {
-        return regionName.replace(" ", "-");
+        return regionName.replace(/ /g, "-");
     }
 
     deepestAvailableRegionFromBreadCrumb(regionNames) {

@@ -293,8 +293,8 @@ export default class MapVisualization {
 
         // This update must go before the following update or else it will stomp on the fill transition
         // Prolly some d3 thing where you need to merge transitions instead of creating a new one?
-        let regionToStroke = isGroup ? null : regionIDs[0]; // Only highlight singles for now, until we can generate union convex path (prolly not worth it)
-        this._setHighlightedRegionWithID(regionToStroke, animated);
+        // Only stroke singles for now, until we can generate union convex path (prolly not worth it)
+        this._setHighlightedRegionWithID(regionIDs[0], !isGroup, animated);
 
         if (isState || isUnhighlighting) {
             let thisMap = this;
@@ -364,7 +364,7 @@ export default class MapVisualization {
         }
     }
 
-    _setHighlightedRegionWithID(regionID, animated = false) {
+    _setHighlightedRegionWithID(regionID, needsStroke = true, animated = false) {
         let previousHighlightedRegionID = this._highlightedRegionID;
         this._highlightedRegionID = regionID;
 
@@ -374,7 +374,7 @@ export default class MapVisualization {
         }
 
         this._updateStrokeForRegionID(previousHighlightedRegionID, false, animated);
-        this._updateStrokeForRegionID(regionID, true, animated);
+        this._updateStrokeForRegionID(needsStroke ? regionID : null, true, animated);
     }
 
     hoverRegionWithID(regionID, animated = false) {
