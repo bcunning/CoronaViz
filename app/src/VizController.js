@@ -287,6 +287,10 @@ export default class VizController {
             if (wasEmpty && this._regionIsState(this.dataTable.aggregateRegionID)) {
                 this.updateDataTable(false);
             }
+            let countyDataIsDisplayedInRankedBars = (this._regionIsState(this.selectedRegionID) || this._regionIsCounty(this.selectedRegionID));
+            if (wasEmpty && countyDataIsDisplayedInRankedBars) {
+                this.updateRankedChartForDay(this.currentDay, false);
+            }
             if (this.map !== undefined) {
                 this.updateMapForDay(this.currentDay, true);
             }
