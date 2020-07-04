@@ -289,13 +289,13 @@ export default class MapVisualization {
         }
 
         let isState = this._regionIDsContainState(regionIDs);
-        let isCounty = this._regionIDsContainCounty(regionIDs);
         let isGroup = (regionIDs.length > 1);
+        let regionToStroke = (isGroup && isState) ? null : regionIDs[0];
 
         // This update must go before the following update or else it will stomp on the fill transition
         // Prolly some d3 thing where you need to merge transitions instead of creating a new one?
         // Only stroke singles for now, until we can generate union convex path (prolly not worth it)
-        this._setHighlightedRegionWithID(isCounty ? regionIDs[0] : null, !isGroup, animated);
+        this._setHighlightedRegionWithID(regionToStroke, !isGroup, animated);
 
         if (isState || isUnhighlighting) {
             let thisMap = this;
