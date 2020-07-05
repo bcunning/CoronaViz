@@ -19,6 +19,7 @@ export default class Evaluator {
         this.title = title;
         this.noun = noun;
         this.nounWithNumber = null;
+        this.anchorNoun = null;
         this.deltaAdjective = "new";
         this.cumulativeAdjective = "total";
         this.needsGroupByCallback = null;
@@ -184,6 +185,7 @@ export default class Evaluator {
         result.display = otherEvaluator.display;
         result.normalized = otherEvaluator.normalized;
         result.nounWithNumber = otherEvaluator.nounWithNumber;
+        result.anchorNoun = otherEvaluator.anchorNoun;
         result.deltaAdjective = otherEvaluator.deltaAdjective;
         result.cumulativeAdjective = otherEvaluator.cumulativeAdjective;
         result.needsGroupByCallback = otherEvaluator.needsGroupByCallback;

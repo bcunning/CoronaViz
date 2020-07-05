@@ -463,8 +463,8 @@ export default class VizController {
     }
 
     _rankedBarChartEvaluators() {
-        return [EvaluatorLibrary.newConfirmedCaseEvaluator(),
-                EvaluatorLibrary.newDeathEvaluator()];
+        return [EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newConfirmedCaseEvaluator(), "RankedCases"),
+                EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newDeathEvaluator(), "RankedDeaths")];
     }
 
     _updateFixedRegionSpacing() {

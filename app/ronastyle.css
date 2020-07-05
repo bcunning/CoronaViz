@@ -244,6 +244,12 @@ svg text {
     margin-bottom: 1.5em;
     margin-top:2em;
 }
+:target::before {
+    content: "";
+    display: block;
+    height: 220px; /* fixed header height*/
+    margin: -220px 0 0; /* negative fixed header height */
+}
 .robo-text-title span.active {
     display: inline-block;
     padding: 3px 0px 1px 0px;

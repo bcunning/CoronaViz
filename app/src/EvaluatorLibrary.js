@@ -47,6 +47,12 @@ export default class EvaluatorLibrary {
             });
     }
 
+    static EvaluatorWithAnchor(evaluator, anchorNoun) {
+        let result = Evaluator.from(evaluator);
+        result.anchorNoun = anchorNoun;
+        return result;
+    }
+
     static regionNameEvaluator() {
         let result = new Evaluator("Region Name",
             "region",
@@ -66,6 +72,7 @@ export default class EvaluatorLibrary {
         result.maxPowerOfTen = 5.0;
         result.supportedRegionLevel = RegionType.County;
         result.source = NYT_NAME;
+        result.anchorNoun = "Cases";
         return result;
     }
 
@@ -88,6 +95,7 @@ export default class EvaluatorLibrary {
         result.deltaAdjective = "Change in";
         result.maxPowerOfTen = 3.0;
         result.allowNegative = true;
+        result.anchorNoun = "Hospitalized";
         result.source = COVID_TRACKING_NAME;
         result.descriptionTemplate = EvaluatorLibrary.currentlyHospitalizedDescription(false);
         result.toggleFunction = function(evaluator) { // Just return a simple copy, everything happens via toggleCount
@@ -163,6 +171,7 @@ export default class EvaluatorLibrary {
         result.noun = "tests";
         result.overallValueForSnapshot = MultiSeriesEvaluator.sumValueForSnapshot();
         result.upIsBetter = true;
+        result.anchorNoun = "Tests";
         return result;
     }
 
@@ -205,6 +214,7 @@ export default class EvaluatorLibrary {
         let result = new MultiSeriesEvaluator([positiveEvaluator, negativeEvaluator], false);
         result.title = "Positive rate"
         result.noun = "test positive rate";
+        result.anchorNoun = "PositiveRate";
         result.normalized = true;
         result.overallValueForSnapshot = MultiSeriesEvaluator.quotientValueForSnapshot();
         result.valueFormatter = format(".1%");
@@ -402,6 +412,7 @@ export default class EvaluatorLibrary {
         result.maxPowerOfTen = 3.0;
         result.supportedRegionLevel = RegionType.County;
         result.source = NYT_NAME;
+        result.anchorNoun = "Deaths";
         return result;
     }
 }

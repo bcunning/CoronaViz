@@ -12,6 +12,7 @@ export default class MultiSeriesEvaluator {
         this.overallValueForSnapshot = null;
         this.valueFormatter = null;
         this.nounQualifier = null;
+        this.anchorNoun = null;
         this.reportingVerbFormatter = null;
         this.benchmarkEvaluator = null;
         this.benchmarkRegionType = RegionType.Nation;
@@ -147,6 +148,7 @@ export default class MultiSeriesEvaluator {
         destination.benchmarkEvaluator = source.benchmarkEvaluator;
         destination.benchmarkRegionType = source.benchmarkRegionType;
         destination.supportedRegionLevel = source.supportedRegionLevel;
+        destination.anchorNoun = source.anchorNoun;
 
         return destination;
     }

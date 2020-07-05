@@ -33,6 +33,8 @@ export default class ChartTitle {
 
     _updateText(animated = false) {
 
+        this.container.attr("id", this.evaluator.anchorNoun);
+
         // Don't animate if we haven't been populated with anything yet
         if (animated && this.metricDescription.text().length > 0) {
             let paddingHeight = parseInt(this.container.style("padding-bottom").replace("px", ""));
