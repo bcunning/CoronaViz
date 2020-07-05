@@ -44,6 +44,7 @@ export default class VizController {
         this.previouslySelectedRegionID = null;
         this._inRegionSet = false;
         this._inDataChange = false;
+        this._processingURL = false;
         this._processingHash = true;
         this.didSelectCounty = null;
 
@@ -315,7 +316,7 @@ export default class VizController {
 
         this._processingHash = true;
         if (hashComponents.length > 0) {
-            console.log("processing hash: " + hashComponents[0]);
+            console.log("Processing hash: " + hashComponents[0]);
             window.location = location.href;
         }
 
@@ -326,15 +327,19 @@ export default class VizController {
     }
 
     processURLPath(requireUpdate = true, animated = false, registerView = false) {
+
         let regionHierarchyPath = VizController.CurrentURLComponents();
         let region = this.deepestAvailableRegionFromBreadCrumb(regionHierarchyPath);
         let invalidCounty = (this.countyInfectionData !== null && regionHierarchyPath.length > 1 && !this._regionIsCounty(region.ID));
         let invalidStateOrCoalition = (regionHierarchyPath.length > 0 && region.ID === this.baseRegion.ID);
         if (invalidCounty || invalidStateOrCoalition) {
-            console.log("404: no region for: " + regionHierarchyPath.last());
+            console.log("404: No region for: " + regionHierarchyPath.last());
             this.updateBrowserStateForRegion(this.regionForRegionID(this.selectedRegionID));
             return;
         }
+
+        this._processingURL = true;
+
         if (requireUpdate) {
             this.setRegion(region.ID, true, this, null, animated);
         } else {
@@ -348,8 +353,9 @@ export default class VizController {
         if (registerView) {
             this.registerPageView();
         }
-    }
 
+        this._processingURL = false;
+    }
 
     static CurrentURLComponents() {
         return window.location.pathname.split('/').filter(function (string) {
@@ -690,7 +696,7 @@ export default class VizController {
 
             // Don't push new state if this is the result of navigating browser state
             // (e.g. the user hitting the back button)
-            if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT) {
+            if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT && !thisController._processingURL) {
                 thisController.updateBrowserStateForRegion(thisController._currentRegion());
             }
         });
