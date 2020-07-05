@@ -44,6 +44,7 @@ export default class VizController {
         this.previouslySelectedRegionID = null;
         this._inRegionSet = false;
         this._inDataChange = false;
+        this._processingHash = true;
         this.didSelectCounty = null;
 
         const thisController = this;
@@ -118,7 +119,7 @@ export default class VizController {
             thisController.didResize();
         });
         window.addEventListener('scroll', function() {
-            thisController.didScroll(this);
+            thisController.didScroll(this, !thisController._processingHash);
         })
 
         window.onpopstate = function(e){
@@ -210,6 +211,8 @@ export default class VizController {
             this.zoomToRegion(this.selectedRegionID, false);
             this.map.highlightRegionsWithIDs(this._mapRegionIDsForRegionID(this.selectedRegionID), false);
         }
+
+        this.processURLHash();
     }
 
     floatingHeaderBottomY() {
@@ -284,19 +287,42 @@ export default class VizController {
         let wasEmpty = (this.countyInfectionData == null);
         if (timeSeries) {
             this.countyInfectionData = timeSeries.timeSeriesBeginningAt(this.firstDay);
-            if (wasEmpty && this._regionIsState(this.dataTable.aggregateRegionID)) {
-                this.updateDataTable(false);
-            }
-            let countyDataIsDisplayedInRankedBars = (this._regionIsState(this.selectedRegionID) || this._regionIsCounty(this.selectedRegionID));
-            if (wasEmpty && countyDataIsDisplayedInRankedBars) {
-                this.updateRankedChartForDay(this.currentDay, false);
-            }
-            if (this.map !== undefined) {
-                this.updateMapForDay(this.currentDay, true);
-            }
+
+            let weakThis = this;
+            let regionID = this.selectedRegionID;
+            this._preserveContentOffsetAroundBlock(function () {
+                if (wasEmpty && weakThis._regionIsState(weakThis.dataTable.aggregateRegionID)) {
+                    weakThis.updateDataTable(false);
+                }
+                let countyDataIsDisplayedInRankedBars = (weakThis._regionIsState(regionID) || weakThis._regionIsCounty(regionID));
+                if (wasEmpty && countyDataIsDisplayedInRankedBars) {
+                    weakThis.updateRankedChartForDay(weakThis.currentDay, false);
+                }
+                if (weakThis.map !== undefined) {
+                    weakThis.updateMapForDay(weakThis.currentDay, true);
+                }
+            });
+
         } else {
             this.countyInfectionData = null;
         }
+    }
+
+    processURLHash(animated= false) {
+        let hashComponents = window.location.hash.split('#').filter(function (string) {
+            return string.length > 0;
+        });
+
+        this._processingHash = true;
+        if (hashComponents.length > 0) {
+            console.log("processing hash: " + hashComponents[0]);
+            window.location = location.href;
+        }
+
+        let thisController = this;
+        setTimeout(function () {
+            thisController._processingHash = false;
+        }, 100);
     }
 
     processURLPath(requireUpdate = true, animated = false, registerView = false) {
@@ -658,6 +684,21 @@ export default class VizController {
             this.didSelectCounty(this.countyInfectionData);
         }
 
+        let thisController = this;
+        this._preserveContentOffsetAroundBlock(function (){
+            thisController._updateForDataChange(zoomToRegion, false, tappedElement, tappedRegionID, animated);
+
+            // Don't push new state if this is the result of navigating browser state
+            // (e.g. the user hitting the back button)
+            if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT) {
+                thisController.updateBrowserStateForRegion(thisController._currentRegion());
+            }
+        });
+
+        this._inRegionSet = false;
+    }
+
+    _preserveContentOffsetAroundBlock(blockToExecute) {
         // Maintain visual position of the currently focused element.
         let priorCenterElementYCoord = -1;
         let isAtTop = this.lastScrollOffset < HEADER_COLLAPSE_SCROLL_DISTANCE;
@@ -666,13 +707,7 @@ export default class VizController {
             priorCenterElementYCoord = centeredElement.getBoundingClientRect().y;
         }
 
-        this._updateForDataChange(zoomToRegion, false, tappedElement, tappedRegionID, animated);
-
-        // Don't push new state if this is the result of navigating browser state
-        // (e.g. the user hitting the back button)
-        if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT) {
-            this.updateBrowserStateForRegion(this._currentRegion());
-        }
+        blockToExecute();
 
         if (centeredElement !== null) {
             let newYCoord = centeredElement.getBoundingClientRect().y;
@@ -680,8 +715,6 @@ export default class VizController {
                 window.scrollBy(0, newYCoord - priorCenterElementYCoord);
             }
         }
-
-        this._inRegionSet = false;
     }
 
     _updateForDataChange(zoomToRegion = true, redrawMap = true, tappedElement = null, tappedRegionID = null, animated = false) {
