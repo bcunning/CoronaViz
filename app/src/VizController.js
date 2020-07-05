@@ -626,7 +626,12 @@ export default class VizController {
     zoomToRegion(regionID, animated = true) {
         let mapRegionIDs = this._mapRegionIDsForRegionID(regionID);
         if (regionID) {
-            let padding = this._regionIsCounty(regionID) ? 3.0 : 1.0;
+            let padding = 1.0;
+            if (this._regionIsCounty(regionID)) {
+                padding = 3.0;
+            } else if (this._regionIsCoalition(regionID)) {
+                padding = 0.8;
+            }
             let regionBounds = this.map.boundingBoxForRegions(mapRegionIDs, padding);
             this.map.zoomToBox(regionBounds, animated);
         }
