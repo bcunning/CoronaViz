@@ -6,7 +6,8 @@ import { PANDEMIC_NAME } from "./Constants.js";
 import DateSelector from "./DateSelector";
 import NavControl from "./NavControl";
 
-const HEADER_COLLAPSE_DURATION = 500.0;
+const NO_ANIMATION_CLASS = "no-transition";
+const FRAME_DURATION = 30.0;
 
 export default class VizHeader {
     constructor(parentElementSelection, allRegions, dateRange) {
@@ -19,7 +20,7 @@ export default class VizHeader {
 
         // Top line title with region select
         this.titleContainer = this.container.append("div")
-            .attr("class", "title title-container header-title-element content-column")
+            .attr("class", "title title-container header-title-element content-column header-expanded-element")
             .style("text-align", textAlign);
         this.titleNav = new NavControl(this.titleContainer);
         this.titleTextContainer = this.titleNav.container.append("div").attr("class", "title-text-container");
@@ -29,7 +30,7 @@ export default class VizHeader {
 
         // Subtitle description of data
         this.dataByline = this.titleContainer.append("h3")
-            .attr("class", "subtitle header-subtitle-element")
+            .attr("class", "subtitle header-subtitle-element header-expanded-element")
             .style("text-align", textAlign)
             .html("Data from the New&nbsp;York&nbsp;Times and the COVID&nbsp;Tracking&nbsp;Project");
         this.dateSelector = new DateSelector(this.titleContainer, textAlign);
@@ -38,7 +39,7 @@ export default class VizHeader {
 
         // The compact title container is what appears when we collapse the header
         this.compactTitleContainer = this.container.append("div")
-            .attr("class", "title title-container standalone")
+            .attr("class", "title title-container standalone header-collapsed-element")
             .style("transform", "translateY(-100%)");
         this.compactTitleContent = this.compactTitleContainer.append("div").attr("class", "standalone-title-content");
         this.compactTitleNav = new NavControl(this.compactTitleContent, true);
@@ -63,7 +64,6 @@ export default class VizHeader {
     }
 
     _computeCollapsedLayout() {
-        let priorMinHeight = this.minHeaderHeight;
         let compactTitleNode = this.compactTitleContainer.node();
         this.minHeaderHeight = compactTitleNode.offsetTop + compactTitleNode.offsetHeight;
         this.maxHeaderHeight = this._currentHeaderNodeHeight();
@@ -105,11 +105,17 @@ export default class VizHeader {
         }
         let marginOffset = this.isCollapsed ? this.minHeaderHeight - this.maxHeaderHeight - 2 : 0;
         let containerSelection = this.collapsedFeatureElement.container;
-
-        if (animated) {
-            containerSelection = containerSelection.transition().duration(HEADER_COLLAPSE_DURATION);
+        let node = containerSelection.node();
+        if (!animated) {
+            node.classList.add(NO_ANIMATION_CLASS);
         }
         containerSelection.style("transform", "translateY(" + marginOffset + "px)");
+        if (!animated) {
+            // Don't remove this class on the same frame or an animation will get triggered anyway
+            setTimeout(function () {
+                node.classList.remove(NO_ANIMATION_CLASS);
+            }, FRAME_DURATION);
+        }
     }
 
     setCollapsed(isCollapsed, animated) {
@@ -124,26 +130,21 @@ export default class VizHeader {
 
         // Fade out outgoing elements
         this.expandedElements.forEach(function (selection) {
-            let appliedSelection = selection;
-            if (animated) {
-                appliedSelection = selection.transition().duration(HEADER_COLLAPSE_DURATION);
-            }
-            appliedSelection.style("opacity", percentExpanded);
+            selection.style("opacity", percentExpanded);
         });
 
         // Pull down the compact view
         let transformString = "translateY(-" + (100 * percentExpanded) + "%)";
-        if (animated) {
-            let originTransformString = "translateY(-" + (100 * percentCollapsed) + "%)";
-            let translateInterpolator = interpolateString(originTransformString, transformString);
-
-            this.compactTitleContainer.transition()
-                .duration(HEADER_COLLAPSE_DURATION)
-                .styleTween('transform', function (d) {
-                    return translateInterpolator;
-                });
-        } else {
-            this.compactTitleContainer.style("transform", transformString);
+        let compactTitleNode = this.compactTitleContainer.node();
+        if (!animated) {
+            compactTitleNode.classList.add(NO_ANIMATION_CLASS);
+        }
+        this.compactTitleContainer.style("transform", transformString);
+        if (!animated) {
+            // Don't remove this class on the same frame or an animation will get triggered anyway
+            setTimeout(function () {
+                compactTitleNode.classList.remove(NO_ANIMATION_CLASS);
+            }, FRAME_DURATION);
         }
 
         // Float up the featured element

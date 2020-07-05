@@ -77,6 +77,12 @@ svg text {
         background: rgb(250,250,250);
     }
 }
+.no-transition {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+}
 
 .title-text-container {
     display: inline;
@@ -113,16 +119,31 @@ svg text {
     height: 0px; /* footer is hidden by default */
     transition: height 0.5s ease;
 }
-.map-viz {
+.map-viz-wrapper {
     width: 100%;
-    margin-bottom: -5px;
     position: relative;
-    pointer-events: all;
-    box-shadow: 0 8px 12px 0 rgba(0,0,0,0);
-    transition: box-shadow 0.5s ease;
+    margin-bottom: -5px;
+    pointer-events: none;
 }
-.map-viz[compact] {
-    box-shadow: 0 8px 12px 0 rgba(0,0,0,0.06);
+.map-viz-wrapper:after {
+    content: "";
+    display: block;
+    background-color:rgba(0,0,0,0);
+    width: 100%;
+    height: 150px;
+    margin-top:-156px;
+    box-shadow: 0 10px 12px 0 rgba(0,0,0,0.06);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+}
+.map-viz-wrapper[compact]:after {
+    opacity: 1;
+}
+.map-viz {
+    position: relative;
+    z-index: 1;
+    pointer-events: all;
 }
 .county-layer {
     /*pointer-events: none;*/
@@ -255,6 +276,14 @@ svg text {
     padding: 3px 0px 1px 0px;
     border-bottom: 1px dotted #555;
     line-height: 1;
+}
+
+.header-expanded-element {
+    transition: opacity 0.5s ease;
+}
+
+.header-collapsed-element {
+    transition: transform 0.5s ease;
 }
 
 .attribution-footer {

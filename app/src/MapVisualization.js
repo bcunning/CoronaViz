@@ -87,8 +87,8 @@ export default class MapVisualization {
         this.mapContainer = parentElementSelection;
 
         // Create SVG
-        this.svg = this.mapContainer.append("svg").attr("class", "map-viz");
-        this.container = this.svg;
+        this.container = this.mapContainer.append("div").attr("class", "map-viz-wrapper header-collapsed-element");
+        this.svg = this.container.append("svg").attr("class", "map-viz");
         this._updateViewboxForNewDimensions(vizWidth, vizHeight);
 
         // Install background rect
@@ -241,7 +241,7 @@ export default class MapVisualization {
     setCompactView(isCompact) {
         if (this.isCompact !== isCompact) {
             this.isCompact = isCompact;
-            this.svg.attr("compact", isCompact ? "" : null);
+            this.container.attr("compact", isCompact ? "" : null);
         }
     }
 

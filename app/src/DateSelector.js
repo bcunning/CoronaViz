@@ -5,7 +5,7 @@ export default class DateSelector {
     constructor(parentElementSelection, textAlign = "center", isStandalone = false) {
         let thisSelector = this;
         this.container = parentElementSelection.append("h2")
-            .attr("class", "date-subtitle header-subtitle-element" + (isStandalone ? " standalone" : ""))
+            .attr("class", "date-subtitle header-subtitle-element header-expanded-element" + (isStandalone ? " standalone" : ""))
             .style("text-align", textAlign);
         let explanation = this.container.append("span")
             .attr("class", "date-intro")
