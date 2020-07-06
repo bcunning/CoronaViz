@@ -285,9 +285,9 @@ export default class OverTimeVisualization {
         this.renderer.drawAnnotations(displayedTrendLineSeries, animated);
     }
 
-    updateDescriptionForRegion(region) {
+    updateDescriptionForRegion(region, isFirstChart = false) {
         if (this.description !== null) {
-            this.description.updateForData(this._filteredData, region, this.evaluator, this._smoothedEvaluator);
+            this.description.updateForData(this._filteredData, region, this.evaluator, this._smoothedEvaluator, isFirstChart);
         }
     }
 

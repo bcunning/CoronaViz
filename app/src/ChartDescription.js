@@ -1,4 +1,4 @@
-import { event, touches } from 'd3-selection';
+import { select, event, touches } from 'd3-selection';
 import { format } from 'd3-format';
 import { timeFormat } from 'd3-time-format';
 import {normalizeDate} from "./DateUtils";
@@ -31,7 +31,7 @@ export default class ChartDescription {
         return "There is no data available for this region."
     }
 
-    updateForData(data, region, evaluator, averageEvaluator) {
+    updateForData(data, region, evaluator, averageEvaluator, isFirstChart = false) {
 
         if (data.length === 0) {
             this.container.html(this.noDataHTML(evaluator, region));
@@ -45,10 +45,51 @@ export default class ChartDescription {
         this.region = region;
         this.evaluator = evaluator;
         this.averageEvaluator = averageEvaluator;
+        this.isFirstChart = isFirstChart;
 
         this.container.html(this.htmlForTemplate(evaluator.descriptionTemplate));
-
+        this._addCopyLinkButton(this.container, isFirstChart);
         this._updateHovers();
+    }
+
+    _copyLinkString() {
+        return this.isFirstChart ? "Copy link to this chart" : "Copy link";
+    }
+
+    _addCopyLinkButton(parentSelection, isFirstChart) {
+        let thisDescription = this;
+        this.button = parentSelection.append("div").attr("class", "data-link")
+                                    .style("display", "flex")
+                                    .on("click", function() {
+                                        thisDescription.copyLinkToChart();
+                                    });
+        if (!isFirstChart) {
+            this.button.append("div").attr("class", "data-link-icon");
+        }
+        this.copyButtonText = this.button.append("div").style("display", "inline").text(this._copyLinkString());
+    }
+
+    copyLinkToChart() {
+        let url = window.location;
+        let hash = "#" + this.evaluator.anchorNoun;
+        let result = url.protocol + url.hostname + url.pathname + hash;
+
+        let tempText = select("body").append("textarea").text(result);
+        tempText.node().select();
+        document.execCommand('copy');
+        tempText.remove();
+
+        console.log("Link copied: " + result);
+
+        let weakThis = this;
+        this.button.style("background", "rgba(0,0,0,0.035)");
+        let textSelection = this.copyButtonText;
+        textSelection.text("Copied");
+        let resetString = this._copyLinkString();
+        setTimeout(function () {
+            textSelection.text(resetString);
+            weakThis.button.style("background", "unset");
+        }, 10000);
     }
 
     _hoverDates(dates, hoverElement = null) {

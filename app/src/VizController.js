@@ -1063,7 +1063,8 @@ export default class VizController {
         }
         let isVisible = this.chartIsVisible(chart);
         chart.updateForData(dataSlice, animated && isVisible);
-        chart.updateDescriptionForRegion(region);
+        let isFirst = (chart === this.overTimeCharts[0]);
+        chart.updateDescriptionForRegion(region, isFirst);
     }
 
     currentOverTimeDataSlice(day) {
