@@ -31,7 +31,7 @@ export default class ChartDescription {
         return "There is no data available for this region."
     }
 
-    updateForData(data, region, evaluator, averageEvaluator, isFirstChart = false) {
+    updateForData(data, region, evaluator, averageEvaluator) {
 
         if (data.length === 0) {
             this.container.html(this.noDataHTML(evaluator, region));
@@ -45,27 +45,24 @@ export default class ChartDescription {
         this.region = region;
         this.evaluator = evaluator;
         this.averageEvaluator = averageEvaluator;
-        this.isFirstChart = isFirstChart;
 
         this.container.html(this.htmlForTemplate(evaluator.descriptionTemplate));
-        this._addCopyLinkButton(this.container, isFirstChart);
+        this._addCopyLinkButton(this.container);
         this._updateHovers();
     }
 
     _copyLinkString() {
-        return this.isFirstChart ? "Copy link to this chart" : "Copy link";
+        return "Copy link to chart";
     }
 
-    _addCopyLinkButton(parentSelection, isFirstChart) {
+    _addCopyLinkButton(parentSelection) {
         let thisDescription = this;
         this.button = parentSelection.append("div").attr("class", "data-link")
                                     .style("display", "flex")
                                     .on("click", function() {
                                         thisDescription.copyLinkToChart();
                                     });
-        if (!isFirstChart) {
-            this.button.append("div").attr("class", "data-link-icon");
-        }
+        this.button.append("div").attr("class", "data-link-icon");
         this.copyButtonText = this.button.append("div").style("display", "inline").text(this._copyLinkString());
     }
 

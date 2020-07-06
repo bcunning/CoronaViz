@@ -691,14 +691,14 @@ export default class VizController {
         }
 
         let thisController = this;
-        this._preserveContentOffsetAroundBlock(function (){
-            thisController._updateForDataChange(zoomToRegion, false, tappedElement, tappedRegionID, animated);
-
+        this._preserveContentOffsetAroundBlock(function () {
             // Don't push new state if this is the result of navigating browser state
             // (e.g. the user hitting the back button)
             if (tappedElement !== BROWSER_BACK_BUTTON_ELEMENT && !thisController._processingURL) {
                 thisController.updateBrowserStateForRegion(thisController._currentRegion());
             }
+
+            thisController._updateForDataChange(zoomToRegion, false, tappedElement, tappedRegionID, animated);
         });
 
         this._inRegionSet = false;
@@ -1063,8 +1063,7 @@ export default class VizController {
         }
         let isVisible = this.chartIsVisible(chart);
         chart.updateForData(dataSlice, animated && isVisible);
-        let isFirst = (chart === this.overTimeCharts[0]);
-        chart.updateDescriptionForRegion(region, isFirst);
+        chart.updateDescriptionForRegion(region);
     }
 
     currentOverTimeDataSlice(day) {
