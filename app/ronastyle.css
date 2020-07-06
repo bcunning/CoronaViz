@@ -155,6 +155,13 @@ svg text {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+.base-chart-container-ranked {
+    margin-top: 1em;
+    margin-bottom: 3em;
+}
+.base-chart-container-ranked:nth-last-child(3) {
+    margin-bottom: 1em;
+}
 .base-chart-container-mini {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -184,6 +191,7 @@ svg text {
     position: relative;
     width: 100%;
     height: 250px;
+    margin-bottom: -8px;
     vertical-align: top;
 }
 .ranked-bar-line {

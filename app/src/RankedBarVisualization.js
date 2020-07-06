@@ -8,6 +8,7 @@ import ChartTitle from "./ChartTitle.js";
 import { HashString } from "./Utils.js";
 
 import { REGION_TRANSITION_DURATION } from "./Constants.js";
+import CopyLinkButton from "./CopyLinkButton";
 
 const BAR_FILL_COLOR = "rgb(252, 185, 163)";
 const BAR_HIGHLIGHT_STROKE = "rgba(0, 0, 0, 1.0)";
@@ -37,11 +38,10 @@ export default class RankedBarVisualization {
         this._currentData = null;
 
         this.title = new ChartTitle(parentElementSelection);
-        this.container = parentElementSelection
+        let topContainer = parentElementSelection
             .append("div")
-            .attr("class", "base-chart-container content-column")
-            .append("div")
-            .attr("class", "ranked-chart-container");
+            .attr("class", "base-chart-container-ranked content-column");
+        this.container = topContainer.append("div").attr("class", "ranked-chart-container");
 
         // Base SVG
         this.svg = this.container
@@ -50,11 +50,13 @@ export default class RankedBarVisualization {
             .attr( "height", "100%" )
             .style("overflow", "visible");
 
+        this.copyLinkButton = new CopyLinkButton(topContainer, evaluator);
+
         // Install background rect
         this.svg.append("rect")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("fill", "white")
+            .attr("fill", "rgba(0,0,0,0)")
             .attr("stroke-width", "2px")
             .attr("stroke", "none");
 

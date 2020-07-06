@@ -422,7 +422,10 @@ export default class VizController {
         // For now just grab the last one.
         let mobilityChart = this.overTimeCharts.last();
         let dataSlice = this.currentOverTimeDataSlice(this.currentDay);
-        this.updateOverTimeChart(mobilityChart, this.currentDay, this._currentRegion(), dataSlice, true);
+        let weakThis = this;
+        this._preserveContentOffsetAroundBlock(function() {
+            weakThis.updateOverTimeChart(mobilityChart, weakThis.currentDay, weakThis._currentRegion(), dataSlice, true);
+        })
     }
 
     isStateSelected() {
@@ -495,8 +498,8 @@ export default class VizController {
     }
 
     _rankedBarChartEvaluators() {
-        return [EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newConfirmedCaseEvaluator(), "RankedCases"),
-                EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newDeathEvaluator(), "RankedDeaths")];
+        return [EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newConfirmedCaseEvaluator(), "ranked-cases"),
+                EvaluatorLibrary.EvaluatorWithAnchor(EvaluatorLibrary.newDeathEvaluator(), "ranked-deaths")];
     }
 
     _updateFixedRegionSpacing() {

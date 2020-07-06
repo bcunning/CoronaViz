@@ -105,7 +105,7 @@ export default class MobilityEvaluator {
         result.valueFormatter = format(".0%");
         result.nounWithNumber = "change";
         result.noun = "visitation";
-        result.anchorNoun = "Mobility";
+        result.anchorNoun = "mobility";
         result.baseRGB = MOBILITY_DATA_COLOR;
         result.supportedRegionLevel = RegionType.County;
         result.maxPowerOfTen = 0.0;
