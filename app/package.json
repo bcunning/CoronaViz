@@ -12,6 +12,7 @@
   "author": "Ben Cunningham",
   "license": "ISC",
   "dependencies": {
+    "@popperjs/core": "^2.4.4",
     "d3-array": "^2.4.0",
     "d3-axis": "^1.0.12",
     "d3-fetch": "^1.1.2",

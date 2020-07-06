@@ -50,7 +50,7 @@ export default class RankedBarVisualization {
             .attr( "height", "100%" )
             .style("overflow", "visible");
 
-        this.copyLinkButton = new CopyLinkButton(topContainer, evaluator);
+        // this.copyLinkButton = new CopyLinkButton(topContainer, evaluator);
 
         // Install background rect
         this.svg.append("rect")

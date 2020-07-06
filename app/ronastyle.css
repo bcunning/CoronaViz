@@ -157,10 +157,11 @@ svg text {
 }
 .base-chart-container-ranked {
     margin-top: 1em;
-    margin-bottom: 3em;
+    margin-bottom: 1em;
+    /*margin-bottom: 3em;*/
 }
 .base-chart-container-ranked:nth-last-child(3) {
-    margin-bottom: 1em;
+    /*margin-bottom: 1em;*/
 }
 .base-chart-container-mini {
     margin-top: 5px;
@@ -191,7 +192,7 @@ svg text {
     position: relative;
     width: 100%;
     height: 250px;
-    margin-bottom: -8px;
+    /*margin-bottom: -8px;*/
     vertical-align: top;
 }
 .ranked-bar-line {
@@ -242,6 +243,7 @@ svg text {
 .robo-text-description {
     color: #333;
     display: block;
+    padding-bottom: 5px;
     margin-bottom: 3em;
     margin-top: 1.5em;
     font-size: 16px;
@@ -606,6 +608,17 @@ div.data-table-cell:nth-child(n+2) {
     opacity: 0.8;
     pointer-events: none;
 }
+.data-confirmation-icon {
+    display: inline;
+    content: url("/CheckIcon.png");
+    width: 11px;
+    height: 11px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 7px;
+    opacity: 0.3;
+    pointer-events: none;
+}
 @media(hover:hover) {
     .data-link:hover {
         background: rgb(250,250,250);;
@@ -842,4 +855,47 @@ button {
 
 .label {
     font-size: 13px;
+}
+
+#tooltip {
+    background: rgb(245,245,245);
+    color: #333;
+    font-weight: bold;
+    padding: 4px 8px;
+    font-size: 11px;
+    line-height: 18px;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+}
+
+#arrow,
+#arrow::before {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    z-index: -1;
+}
+
+#arrow::before {
+    content: '';
+    transform: rotate(45deg);
+    background: rgb(245,245,245);
+}
+
+#tooltip[data-popper-placement^='top'] > #arrow {
+    bottom: -4px;
+}
+
+#tooltip[data-popper-placement^='bottom'] > #arrow {
+    top: -4px;
+}
+
+#tooltip[data-popper-placement^='left'] > #arrow {
+    right: -4px;
+}
+
+#tooltip[data-popper-placement^='right'] > #arrow {
+    left: -4px;
 }
