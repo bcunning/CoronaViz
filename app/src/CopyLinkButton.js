@@ -28,7 +28,6 @@ export default class CopyLinkButton {
         }
 
         this.copyButtonText.text(this._copyLinkString());
-        this.button.style("background", "unset");
         this.buttonIcon.attr("class", "data-link-icon");
         this.toolTipSelection.remove();
 
@@ -56,7 +55,6 @@ export default class CopyLinkButton {
 
         console.log("Link copied: " + result);
 
-        this.button.style("background", "rgba(0,0,0,0.025)");
         this.copyButtonText.text("Copied");
         this.buttonIcon.attr("class", "data-confirmation-icon");
 
