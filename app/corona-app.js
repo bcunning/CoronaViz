@@ -117,7 +117,7 @@ function loadStateMobilityData(currentStateData) {
             console.time("Process State mobility data");
             let stateMobilityJSON = values[0];
             currentStateData.updateForMobilityJSON(stateMobilityJSON);
-            if (vizController.isStateSelected()) {
+            if (vizController.isStateSelected() || vizController.isCoalitionSelected()) {
                 vizController.updateMobilityChart();
             }
             console.timeEnd("Process State mobility data");

@@ -442,6 +442,10 @@ export default class VizController {
         return this._regionIsState(this.selectedRegionID);
     }
 
+    isCoalitionSelected() {
+        return this._regionIsCoalition(this.selectedRegionID);
+    }
+
     didResize() {
         let currentWidth = window.innerWidth;
         if (currentWidth !== this.lastWindowWidthUpdate) {
