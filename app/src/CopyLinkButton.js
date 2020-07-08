@@ -46,7 +46,7 @@ export default class CopyLinkButton {
         let url = window.location;
         let hash = "#" + this.evaluator.anchorNoun;
         let withoutProtocol = url.hostname + url.pathname + hash;
-        let result = url.protocol + "//" + withoutProtocol;
+        let result = url.protocol + withoutProtocol;
 
         let tempText = select("body").append("textarea").text(result);
         tempText.node().select();
