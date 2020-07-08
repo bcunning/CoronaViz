@@ -8,7 +8,7 @@ import {timeFormat} from "d3-time-format";
 import ChartSegment, {ChartDrawMode} from "./ChartSegment";
 import DrawingUtils from "./DrawingUtils";
 import {ChartDisplayMode} from './OverTimeVisualization.js'
-import {normalizeDate, numDaysBetweenDates} from "./DateUtils";
+import {denormalizeDate, normalizeDate, numDaysBetweenDates} from "./DateUtils";
 
 import {REGION_TRANSITION_DURATION} from "./Constants";
 
@@ -312,7 +312,7 @@ export default class OverTimeRenderer {
         // Our latest datapoint date, offset by barsWorthOfDays, is where the domain will end.
         let barsWorthOfDays = this.barWidth() / (this.barWidth() + this.barPadding());
         let beginDateDomain = baseDisplayedDomain[0];
-        let endOfFinalDay = latestDataPoint.addDays(barsWorthOfDays);
+        let endOfFinalDay = denormalizeDate(latestDataPoint.addDays(barsWorthOfDays)); // Date.addDays normalizes by default. Avoid doing it twice (normalization happens below).
 
         let displayAsPercent = bottomSeries.evaluator.displayAsPercent;
 
@@ -370,7 +370,7 @@ export default class OverTimeRenderer {
             let earliestDisplayedPoint = min(allSeries, d => d.data[0].data.date);
             let latestDisplayedPoint = max(allSeries, d => d.data[d.data.length - 1].data.date);
             let latestTickValue = latestDisplayedPoint.addDays(barsWorthOfDays);
-            result = [normalizeDate(earliestDisplayedPoint), normalizeDate(latestTickValue)];
+            result = [normalizeDate(earliestDisplayedPoint), latestTickValue];
         } else {
             result = [normalizeDate(defaultDomain[0]), normalizeDate(defaultDomain[1])];
         }
