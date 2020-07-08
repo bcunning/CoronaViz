@@ -206,7 +206,7 @@ export default class VizController {
         this.lastScrollOffset = 0;
         this.didScroll(window, false);
 
-        this.processURLPath(false);
+        let moreToLoad = this.processURLPath(false);
         this.setDay(this.nationInfectionData.lastDayString());
         if (this.selectedRegionID !== this.baseRegion.ID) {
             this.zoomToRegion(this.selectedRegionID, false);
@@ -214,6 +214,10 @@ export default class VizController {
         }
 
         this.processURLHash();
+
+        if (moreToLoad) {
+            this.header.setIsLoading(true);
+        }
     }
 
     floatingHeaderBottomY() {
@@ -292,6 +296,8 @@ export default class VizController {
             let weakThis = this;
             let regionID = this.selectedRegionID;
             this._preserveContentOffsetAroundBlock(function () {
+                weakThis.header.setIsLoading(false);
+
                 if (wasEmpty && weakThis._regionIsState(weakThis.dataTable.aggregateRegionID)) {
                     weakThis.updateDataTable(false);
                 }
@@ -330,18 +336,20 @@ export default class VizController {
 
         let regionHierarchyPath = VizController.CurrentURLComponents();
         let region = this.deepestAvailableRegionFromBreadCrumb(regionHierarchyPath);
+        let moreToLoad = regionHierarchyPath.length > 1 && !this._regionIsCounty(region.ID);
         let invalidCounty = (this.countyInfectionData !== null && regionHierarchyPath.length > 1 && !this._regionIsCounty(region.ID));
         let invalidStateOrCoalition = (regionHierarchyPath.length > 0 && region.ID === this.baseRegion.ID);
         if (invalidCounty || invalidStateOrCoalition) {
             console.log("404: No region for: " + regionHierarchyPath.last());
             this.updateBrowserStateForRegion(this.regionForRegionID(this.selectedRegionID));
-            return;
+            return false;
         }
 
         this._processingURL = true;
 
         if (requireUpdate) {
-            this.setRegion(region.ID, true, this, null, animated);
+            this.setRegion(region.ID, false, this, null, animated);
+            this.zoomToRegion(region.ID, this._regionIsCounty(region.ID));
         } else {
             this.selectedRegionID = region.ID;
         }
@@ -355,6 +363,8 @@ export default class VizController {
         }
 
         this._processingURL = false;
+
+        return moreToLoad;
     }
 
     static CurrentURLComponents() {

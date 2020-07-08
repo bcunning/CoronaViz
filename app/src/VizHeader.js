@@ -11,6 +11,7 @@ const FRAME_DURATION = 30.0;
 
 export default class VizHeader {
     constructor(parentElementSelection, allRegions, dateRange) {
+        this.isLoading = false;
         this.allRegions = allRegions;
         this.parentElement = parentElementSelection;
         this.container = parentElementSelection.append("div").attr("class", "header-container");
@@ -116,6 +117,43 @@ export default class VizHeader {
                 node.classList.remove(NO_ANIMATION_CLASS);
             }, FRAME_DURATION);
         }
+    }
+
+    _addLoadingMessage(parentElementSelection, beforeSelector = null, isStandalone = false) {
+        let standaloneClass = isStandalone ? " standalone" : "";
+        let baseClass = isStandalone ? "loading-title-standalone" : "loading-title";
+        let result = parentElementSelection.insert("div", beforeSelector)
+            .attr("class", "region-select-text title " + baseClass + standaloneClass)
+            .text("Loading Counties");
+        let ellipsis = result.append("div").attr("class", "lds-ellipsis");
+        ellipsis.html("<div></div><div></div><div></div><div></div>");
+
+        return result;
+    }
+
+    setIsLoading(isLoading) {
+        if (this.isLoading === isLoading) {
+            return;
+        }
+
+        if (isLoading) {
+            this.titleLoadingText = this._addLoadingMessage(this.titleContainer, "div.nav-control", false);
+            this.compactTitleLoadingText = this._addLoadingMessage(this.compactTitleContent, "form.region-select-text", true);
+
+            this.titleNav.container.style("display", "none");
+            this.compactRegionSelect.elementSelection().style("display", "none");
+        } else {
+            this.titleLoadingText.remove();
+            this.compactTitleLoadingText.remove();
+
+            this.titleLoadingText = null;
+            this.compactTitleLoadingText = null;
+
+            this.titleNav.container.style("display", "flex");
+            this.compactRegionSelect.elementSelection().style("display", "flex");
+        }
+
+        this.isLoading = isLoading;
     }
 
     setCollapsed(isCollapsed, animated) {
