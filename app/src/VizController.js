@@ -347,7 +347,7 @@ export default class VizController {
 
         this._processingURL = true;
 
-        if (requireUpdate) {
+        if (requireUpdate && region.ID !== this.baseRegion.ID) {
             this.setRegion(region.ID, false, this, null, animated);
             this.zoomToRegion(region.ID, this._regionIsCounty(region.ID));
         } else {
