@@ -53,6 +53,9 @@ function loadedData(countryGeometry, rawData, countryMobility) {
             console.time("Process remaining region data");
 
             coalitionData.updateForMobilityJSON(coalitionMobilityJSON);
+            if (vizController.isCoalitionSelected()) {
+                vizController.updateMobilityChart();
+            }
 
             if (rawRemainingData.countyData !== undefined) {
                 console.time("Parse county JSON");
@@ -117,7 +120,7 @@ function loadStateMobilityData(currentStateData) {
             console.time("Process State mobility data");
             let stateMobilityJSON = values[0];
             currentStateData.updateForMobilityJSON(stateMobilityJSON);
-            if (vizController.isStateSelected() || vizController.isCoalitionSelected()) {
+            if (vizController.isStateSelected()) {
                 vizController.updateMobilityChart();
             }
             console.timeEnd("Process State mobility data");
