@@ -97,7 +97,7 @@ export default class Evaluator {
     }
 
     _designatedValueFormatter() {
-        return (this.valueFormatter !== null) ? this.valueFormatter : format(",");
+        return (this.valueFormatter !== null) ? this.valueFormatter : format(",.0f");
     }
 
     formatValueHTML(snapshot, value) {
@@ -122,6 +122,12 @@ export default class Evaluator {
         }
 
         return this.statDescription() + " " + this.noun;
+    }
+
+    perCapitaNoun(fullyQualified = false) {
+        let qualifier = fullyQualified ? " people" : "";
+        let suffix = this.perCapita ? (" per million" + qualifier) : "";
+        return this.noun + suffix;
     }
 
     reportingVerb() {
@@ -257,7 +263,7 @@ export default class Evaluator {
             return 0;
         }
         if (this.perCapita) {
-            result = result / infectionSnapshot.region.population;
+            result = 1000000 * result / infectionSnapshot.region.population;
         }
         return result;
     }

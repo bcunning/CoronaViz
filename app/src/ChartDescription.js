@@ -24,7 +24,7 @@ export default class ChartDescription {
         this.didHoverDates = null;
 
         this.percentFormatter = format(".0%");
-        this.defaultFormatter = format(",");
+        this.defaultFormatter = format(",.0f");
         this.dateFormatter = timeFormat("%B %e");
     }
 
@@ -232,7 +232,7 @@ export default class ChartDescription {
                 return this.evaluator.measureDelta ? "" : "all ";
                 break;
             case "Noun":
-                return this.evaluator.noun;
+                return this.evaluator.perCapitaNoun(true);
                 break;
             case "NounIs":
                 return this.evaluator.dataIsAtomic() ? "are" : "is";

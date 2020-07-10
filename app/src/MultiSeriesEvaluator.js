@@ -33,12 +33,16 @@ export default class MultiSeriesEvaluator {
     }
     
     formatValue(value) {
-        let formatter = (this.valueFormatter !== null) ? this.valueFormatter : format(",");
+        let formatter = (this.valueFormatter !== null) ? this.valueFormatter : format(",.0f");
         return formatter(value);
     }
 
     formatValueHTML(snapshot, value) {
         return this.formatValue(value);
+    }
+
+    perCapitaNoun(fullyQualified = false) {
+        return this.metricEvaluators[0].perCapitaNoun(fullyQualified);
     }
 
     numSeries() {

@@ -56,7 +56,7 @@ export default class ChartTitle {
         }
 
         this.statAdjective.text(this.evaluator.statDescription().capitalize());
-        this.metricDescription.text(' ' + this.evaluator.noun + ' ');
+        this.metricDescription.text(' ' + this.evaluator.perCapitaNoun() + ' ');
         this.regionPreposition.text(this.region.prepositionString());
         this.regionDescription.text(this.region.plainEnglishNameWithArticle());
         if (this.evaluator.needsGroupBy()) {
