@@ -164,19 +164,23 @@ export default class OverTimeRenderer {
         let speed = this.animationSpeed();
         let renderer = this;
         let tickFormatter = timeFormat("%B %e");
+        // Flip the orientation of the ticks if we don't have enough days to give them room
+        let daysCovered = numDaysBetweenDates(tickDates[0], tickDates[1]);
+        let flipFirstTickOrientation = (daysCovered < 30);
+        let hideFirstTick = (daysCovered < 10);
+        let firstCheck = function(index, data) { return index === 0; };
+        let lastCheck = function (index, data) { return index === data.length - 1; };
+        if (flipFirstTickOrientation) {
+            firstCheck = function (index, data) { return false; };
+            lastCheck = function (index, data) { return true; };
+        }
         let tickSelection = this.xAxisLabelContainer.selectAll("text")
-            .data(tickDates, function (data, index) {
+            .data(hideFirstTick ? [tickDates[1]] : tickDates, function (data, index) {
                 return index;
             })
             .join(function (enter) {
                 return enter.append("text")
                     .attr("class", "over-time-x-label")
-                    .attr("first", function (tick, index) {
-                        return (index === 0) ? "" : null;
-                    })
-                    .attr("last", function (tick, index, data) {
-                        return (index === data.length - 1) ? "" : null;
-                    })
                     .attr("dy", "1.35em")
                     .attr("y", 0)
                     .attr("x", d => renderer.viewX(d));
@@ -187,6 +191,12 @@ export default class OverTimeRenderer {
         }
 
         tickSelection.attr("x", d => renderer.viewX(d))
+            .attr("first", function (tick, index, data) {
+                return firstCheck(index, data) ? "" : null;
+            })
+            .attr("last", function (tick, index, data) {
+                return lastCheck(index, data) ? "" : null;
+            })
             .text(d => tickFormatter(d));
 
         let needsXAxis = !displayAsPercent && !allowNegativeNumbers;
