@@ -585,7 +585,7 @@ div.data-table-cell:nth-child(n+2) {
     font-size: 11px;
     line-height: 18px;
     display: block;
-    margin-top: 1.0em;
+    margin-top: 1.5em;
     border: 1px solid #aaa;
     width:fit-content;
     border-radius: 6px;
