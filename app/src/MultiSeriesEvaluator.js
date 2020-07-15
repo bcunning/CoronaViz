@@ -42,7 +42,10 @@ export default class MultiSeriesEvaluator {
     }
 
     perCapitaNoun(fullyQualified = false) {
-        return this.metricEvaluators[0].perCapitaNoun(fullyQualified);
+        if (this.metricEvaluators[0].perCapita) {
+            return this.metricEvaluators[0].perCapitaNoun(fullyQualified);
+        }
+        return this.noun;
     }
 
     numSeries() {
