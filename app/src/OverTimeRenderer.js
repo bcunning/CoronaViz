@@ -166,8 +166,8 @@ export default class OverTimeRenderer {
         let tickFormatter = timeFormat("%B %e");
         // Flip the orientation of the ticks if we don't have enough days to give them room
         let daysCovered = numDaysBetweenDates(tickDates[0], tickDates[1]);
-        let flipFirstTickOrientation = (daysCovered < 30);
-        let hideFirstTick = (daysCovered < 10);
+        let flipFirstTickOrientation = (daysCovered < 45);
+        let hideFirstTick = (daysCovered < 22);
         let firstCheck = function(index, data) { return index === 0; };
         let lastCheck = function (index, data) { return index === data.length - 1; };
         if (flipFirstTickOrientation) {
