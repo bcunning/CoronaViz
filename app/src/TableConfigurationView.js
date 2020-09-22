@@ -12,7 +12,7 @@ export default class TableConfigurationView {
     constructor(parentElementSelection, dateRange = null) {
         this.baseStat = -1;
         this.dateRange = dateRange;
-        this.recentDateRange = [dateRange[1].addDays(-30), dateRange[1]];
+        this.recentDateRange = [dateRange[1].addDays(-60), dateRange[1]];
 
         this.didUpdateEvaluators = null;
 
@@ -125,19 +125,19 @@ export default class TableConfigurationView {
         if (configurationView.baseStat === BaseStatistic.ConfirmedCases) {
             metricEvaluators = [EvaluatorLibrary.newConfirmedCaseEvaluator(),
                                 EvaluatorLibrary.newCaseTrendEvaluator(),
-                                EvaluatorLibrary.newCaseGraphicEvaluator(configurationView.dateRange)];
+                                EvaluatorLibrary.newCaseGraphicEvaluator(configurationView.recentDateRange)];
         } else if (configurationView.baseStat === BaseStatistic.Deaths) {
             metricEvaluators = [EvaluatorLibrary.newDeathEvaluator(),
                                 EvaluatorLibrary.newDeathTrendEvaluator(),
-                                EvaluatorLibrary.newDeathGraphicEvaluator(configurationView.dateRange)];
+                                EvaluatorLibrary.newDeathGraphicEvaluator(configurationView.recentDateRange)];
         } else if (configurationView.baseStat === BaseStatistic.TestsPerformed) {
             metricEvaluators = [EvaluatorLibrary.newTestEvaluator(),
                                 EvaluatorLibrary.newTestTrendEvaluator(),
-                                EvaluatorLibrary.newTestGraphicEvaluator(configurationView.dateRange)];
+                                EvaluatorLibrary.newTestGraphicEvaluator(configurationView.recentDateRange)];
         } else if (configurationView.baseStat === BaseStatistic.Hospitalizations) {
             metricEvaluators = [EvaluatorLibrary.currentlyHospitalizedEvaluator(),
                                 EvaluatorLibrary.currentlyHospitalizedTrendEvaluator(),
-                                EvaluatorLibrary.currentlyHospitalizedGraphicEvaluator(configurationView.dateRange)];
+                                EvaluatorLibrary.currentlyHospitalizedGraphicEvaluator(configurationView.recentDateRange)];
         } else if (configurationView.baseStat === BaseStatistic.PercentPositive) {
             metricEvaluators = [EvaluatorLibrary.newTestPercentPositiveEvaluator(true),
                                 EvaluatorLibrary.dailyPercentPositiveTrendEvaluator(),
