@@ -33,7 +33,7 @@ export default class Evaluator {
         this.wantsFill = true;
         this.source = null;
         this.annotation = null;
-        this.annotationPlacement = AnnotationPlacement.WeekAgo;
+        this.annotationPlacement = AnnotationPlacement.MonthAgo;
         this.supportedRegionLevel = RegionType.State;
 
         this.benchmarkEvaluator = null;

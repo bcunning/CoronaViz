@@ -27,6 +27,7 @@
     "d3-time-format": "^2.3.0",
     "d3-timer": "^1.0.10",
     "d3-zoom": "^1.8.3",
+    "smoothscroll-polyfill": "^0.4.4",
     "topojson-client": "^3.1.0",
     "topojson-server": "^3.0.1"
   },

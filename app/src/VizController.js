@@ -1,5 +1,9 @@
 import { format } from 'd3-format';
 
+// Added for support of smooth scrolling on safari (required for the map's tap-to-top functionality)
+import smoothscroll from 'smoothscroll-polyfill';
+smoothscroll.polyfill();
+
 import CGRect from "./CGRect.js";
 import DataTable from "./DataTable.js";
 import EvaluatorLibrary from "./EvaluatorLibrary.js";
@@ -197,7 +201,7 @@ export default class VizController {
             if (thisController.selectedRegionID !== thisController.baseRegion.ID) {
                 thisController.unsetRegion(true);
             } else {
-                document.body.scrollIntoView({behavior: 'smooth', block: 'start'});
+                window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
             }
         };
 

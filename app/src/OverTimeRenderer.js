@@ -19,7 +19,7 @@ export const AnnotationOrientation  = {
 };
 
 export const AnnotationPlacement  = {
-    WeekAgo: 0,
+    MonthAgo: 0,
     AtDataMax: 1,
 };
 
@@ -403,8 +403,8 @@ export default class OverTimeRenderer {
                 });
                 result = maxIndex;
             }
-            case AnnotationPlacement.WeekAgo: {
-                let daysBack = 7;
+            case AnnotationPlacement.MonthAgo: {
+                let daysBack = 30;
                 let index = series.data.length - daysBack;
                 if (index < daysBack) {
                     index = series.data.length - 1;
