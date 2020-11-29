@@ -194,7 +194,11 @@ export default class VizController {
         };
 
         this.map.onOceanClicked = function() {
-            thisController.unsetRegion(true);
+            if (thisController.selectedRegionID !== thisController.baseRegion.ID) {
+                thisController.unsetRegion(true);
+            } else {
+                document.body.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
         };
 
         this.map.didScrollAwayFromHighlightedState = function() {

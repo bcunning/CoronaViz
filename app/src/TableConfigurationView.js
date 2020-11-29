@@ -12,7 +12,7 @@ export default class TableConfigurationView {
     constructor(parentElementSelection, dateRange = null) {
         this.baseStat = -1;
         this.dateRange = dateRange;
-        this.recentDateRange = [dateRange[1].addDays(-60), dateRange[1]];
+        this.recentDateRange = [dateRange[1].addDays(-60), dateRange[1].addDays(1)];
 
         this.didUpdateEvaluators = null;
 
@@ -31,10 +31,6 @@ export default class TableConfigurationView {
             .attr("class", "toggle-button")
             .text("Hospitalizations")
             .on("click", function() { thisConfig._didClickStatButton(this)});
-        // this.testButton = this.baseStatToggle.append("button")
-        //     .attr("class", "toggle-button")
-        //     .text("Tests")
-        //     .on("click", function() { thisConfig._didClickStatButton(this)});
         this.percentPositiveButton = this.baseStatToggle.append("button")
             .attr("class", "toggle-button")
             .text("% Positive")
