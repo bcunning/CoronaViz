@@ -21,7 +21,8 @@ export default class HoverView {
         this.rowTwoSecondaryText = this.secondaryColumn.append("div").attr("class", "hover-secondary-text");
 
         this.dateFormatter = timeFormat("%B %e");
-        this.bigNumberFormatter = format(".2s");
+        this.bigNumberFormatter = format(".3s");
+        this.mediumNumberFormatter = format(".2s");
         this.smallNumberFormatter = format(".2");
         this.numberFormatter = format(".3");
     }
@@ -32,8 +33,17 @@ export default class HoverView {
         }
 
         let magnitude = Math.abs(value);
-        if (magnitude >= 1000) {
+        // We don't need high precision once we're in the millions
+        if (magnitude >= 1000000) {
+            return this.mediumNumberFormatter;
+        }
+
+        if (magnitude >= 100000) {
             return this.bigNumberFormatter;
+        }
+
+        if (magnitude >= 1000) {
+            return this.mediumNumberFormatter;
         }
 
         if (magnitude < 100) {
